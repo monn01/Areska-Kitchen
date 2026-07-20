@@ -27,13 +27,15 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Image
-                src="/logo/logo-monochrome.png"
-                alt="Areska Kitchen"
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-full object-cover"
-              />
+              <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full">
+                <Image
+                  src="/logo/logo-monochrome.png"
+                  alt="Areska Kitchen"
+                  fill
+                  sizes="36px"
+                  className="object-cover"
+                />
+              </span>
               <span className="font-heading text-lg font-semibold">Areska Kitchen</span>
             </div>
             <p className="text-sm uppercase tracking-[0.25em] text-orange-300">

@@ -55,7 +55,7 @@ function FloatingInput({
       )}
       <label
         htmlFor={id}
-        className="pointer-events-none absolute left-4 top-2 text-xs font-medium text-green-700/60 transition-all duration-fast peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-green-700/40 peer-focus:top-2 peer-focus:text-xs peer-focus:text-green-600"
+        className="pointer-events-none absolute left-4 top-2 text-xs font-medium text-green-700 transition-all duration-fast peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-green-600 peer-focus:top-2 peer-focus:text-xs peer-focus:text-green-600"
       >
         {label}
       </label>
@@ -157,12 +157,12 @@ export function Contact() {
             />
             <button
               type="submit"
-              className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-orange-500 px-6 py-3 font-semibold text-white transition-colors duration-fast hover:bg-orange-600 sm:w-auto"
+              className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-orange-500 px-6 py-3 font-semibold text-green-900 transition-colors duration-fast hover:bg-orange-600 sm:w-auto"
             >
               <Send className="h-4 w-4" strokeWidth={1.5} />
               Kirim via WhatsApp
             </button>
-            <p className="text-xs text-green-700/50">
+            <p className="text-xs text-green-700/80">
               Pesan akan diteruskan ke WhatsApp Business kami — belum ada
               pengiriman otomatis di Fase 1.
             </p>

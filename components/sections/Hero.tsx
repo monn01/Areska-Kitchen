@@ -94,7 +94,7 @@ export function Hero() {
           </motion.div>
           <motion.p
             variants={shouldReduceMotion ? undefined : item}
-            className="mt-4 text-sm text-green-700/60"
+            className="mt-4 text-sm text-green-700/80"
           >
             Sistem pemesanan online segera hadir — untuk saat ini, pesan
             langsung lewat WhatsApp.

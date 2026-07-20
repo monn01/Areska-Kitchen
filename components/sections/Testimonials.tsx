@@ -71,23 +71,27 @@ export function Testimonials() {
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <p className="mt-6 font-semibold text-green-700">{t.name}</p>
-                <p className="text-sm text-green-700/60">{t.role}</p>
+                <p className="text-sm text-green-500">{t.role}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 flex justify-center gap-2">
+        <div className="mt-6 flex justify-center">
           {testimonials.map((t, i) => (
             <button
               key={t.id}
               aria-label={`Lihat testimoni ${i + 1}`}
               onClick={() => goTo(i)}
-              className={cn(
-                "h-2 rounded-full transition-all duration-base",
-                i === active ? "w-6 bg-orange-500" : "w-2 bg-green-200 hover:bg-green-300",
-              )}
-            />
+              className="flex h-6 w-6 shrink-0 items-center justify-center"
+            >
+              <span
+                className={cn(
+                  "h-2 rounded-full transition-all duration-base",
+                  i === active ? "w-6 bg-orange-500" : "w-2 bg-green-200 hover:bg-green-300",
+                )}
+              />
+            </button>
           ))}
         </div>
       </div>

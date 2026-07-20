@@ -41,7 +41,7 @@ export function Menu() {
                 className={
                   category === activeCategory
                     ? "text-green-700"
-                    : "text-green-700/50 hover:text-green-700/80"
+                    : "text-green-500 hover:text-green-700"
                 }
               >
                 {category}

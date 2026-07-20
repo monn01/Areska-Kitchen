@@ -46,17 +46,21 @@ export function Navbar() {
     >
       <div className="mx-auto flex h-full max-w-container items-center justify-between px-4 sm:px-6 lg:px-8">
         <a href="#beranda" className="flex items-center gap-2 shrink-0">
-          <Image
-            src="/logo/logo-icon.png"
-            alt="Areska Kitchen"
-            width={40}
-            height={40}
+          <span
             className={cn(
-              "rounded-full transition-all duration-base",
+              "relative block shrink-0 overflow-hidden rounded-full transition-all duration-base",
               scrolled ? "h-9 w-9" : "h-11 w-11",
             )}
-            priority
-          />
+          >
+            <Image
+              src="/logo/logo-icon.png"
+              alt="Areska Kitchen"
+              fill
+              sizes="44px"
+              className="object-cover"
+              priority
+            />
+          </span>
           <span className="hidden sm:block font-heading text-lg font-semibold text-green-600">
             Areska Kitchen
           </span>
