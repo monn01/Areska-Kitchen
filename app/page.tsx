@@ -5,6 +5,8 @@ import { TrustIndicators } from "@/components/sections/TrustIndicators";
 import { About } from "@/components/sections/About";
 import { TrustedBy } from "@/components/sections/TrustedBy";
 import { Menu } from "@/components/sections/Menu";
+import { Testimonials } from "@/components/sections/Testimonials";
+import { Contact } from "@/components/sections/Contact";
 
 export default function Home() {
   return (
@@ -16,6 +18,8 @@ export default function Home() {
         <About />
         <TrustedBy />
         <Menu />
+        <Testimonials />
+        <Contact />
       </main>
       <Footer />
     </>
