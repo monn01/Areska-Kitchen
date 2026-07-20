@@ -44,7 +44,7 @@ export function Testimonials() {
     <section id="testimoni" className="bg-cream-100 py-20 sm:py-28">
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-orange-500">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
             Testimoni
           </p>
           <h2 className="mt-3 font-heading text-3xl font-semibold text-green-700 sm:text-4xl">

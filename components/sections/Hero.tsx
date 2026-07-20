@@ -55,7 +55,7 @@ export function Hero() {
         >
           <motion.p
             variants={shouldReduceMotion ? undefined : item}
-            className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-orange-500"
+            className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-green-500"
           >
             a taste of home
           </motion.p>

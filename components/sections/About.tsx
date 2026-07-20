@@ -33,7 +33,7 @@ export function About() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="order-1 lg:order-2"
         >
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-orange-500">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
             Tentang Kami
           </p>
           <h2 className="font-heading text-3xl font-semibold text-green-700 sm:text-4xl">

@@ -18,7 +18,7 @@ export function Menu() {
     <section id="menu" className="bg-cream-50 py-20 sm:py-28">
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-orange-500">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
             Menu Kami
           </p>
           <h2 className="mt-3 font-heading text-3xl font-semibold text-green-700 sm:text-4xl">
@@ -91,7 +91,7 @@ export function Menu() {
                       {item.description}
                     </p>
                     <div className="mt-4 flex items-center justify-between gap-3">
-                      <span className="text-sm font-semibold text-orange-600">
+                      <span className="text-sm font-semibold text-green-700">
                         {item.priceRange}
                       </span>
                       <Button

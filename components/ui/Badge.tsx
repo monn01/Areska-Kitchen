@@ -6,7 +6,7 @@ type StatusVariant = "profit" | "loss" | "pending" | "neutral";
 const statusClasses: Record<StatusVariant, string> = {
   profit: "bg-green-50 text-green-600",
   loss: "bg-[#F7E4DF] text-status-loss",
-  pending: "bg-orange-50 text-orange-600",
+  pending: "bg-orange-100 text-orange-700",
   neutral: "bg-slate-100 text-slate-700",
 };
 

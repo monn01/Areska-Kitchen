@@ -18,7 +18,7 @@ export function TrustedBy() {
     <section className="bg-green-50/60 py-16 sm:py-20">
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-orange-500">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
             Dipercaya Oleh
           </p>
           <h2 className="mt-3 font-heading text-2xl font-semibold text-green-700 sm:text-3xl">
