@@ -1,22 +1,11 @@
-"use client";
-
 import Image from "next/image";
-import { motion, useReducedMotion } from "framer-motion";
 import { trustIndicators } from "@/lib/data";
 
 export function About() {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <section id="tentang-kami" className="bg-cream-100 py-20 sm:py-28">
       <div className="mx-auto grid max-w-container gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
-        <motion.div
-          initial={{ clipPath: shouldReduceMotion ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)" }}
-          whileInView={{ clipPath: "inset(0 0% 0 0)" }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="relative order-2 aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-[0_20px_60px_rgba(31,77,58,0.16)] lg:order-1"
-        >
+        <div className="relative order-2 aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-[0_20px_60px_rgba(31,77,58,0.16)] lg:order-1">
           <Image
             src="/assets/hero/box-closed.jpg"
             alt="Kemasan box Areska Kitchen dengan label Homemade, Fresh Ingredients, Prepared with Love"
@@ -24,15 +13,9 @@ export function About() {
             sizes="(min-width: 1024px) 560px, 100vw"
             className="object-cover"
           />
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="order-1 lg:order-2"
-        >
+        <div className="order-1 lg:order-2">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
             Tentang Kami
           </p>
@@ -61,7 +44,7 @@ export function About() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

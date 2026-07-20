@@ -113,8 +113,7 @@ export function Contact() {
 
             <motion.div
               initial={{ opacity: shouldReduceMotion ? 1 : 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true, amount: 0.2 }}
+              animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
               className="mt-6 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-green-100 sm:aspect-video"
             >
