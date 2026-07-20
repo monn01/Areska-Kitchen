@@ -60,8 +60,8 @@ export function Menu() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeCategory}
-            initial={shouldReduceMotion ? undefined : { opacity: 0 }}
-            animate={shouldReduceMotion ? undefined : { opacity: 1 }}
+            initial={{ opacity: shouldReduceMotion ? 1 : 0 }}
+            animate={{ opacity: 1 }}
             exit={shouldReduceMotion ? undefined : { opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
@@ -69,8 +69,12 @@ export function Menu() {
             {filteredItems.map((item, i) => (
               <motion.div
                 key={item.id}
-                initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16, scale: 0.98 }}
-                animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                initial={{
+                  opacity: shouldReduceMotion ? 1 : 0,
+                  y: shouldReduceMotion ? 0 : 16,
+                  scale: shouldReduceMotion ? 1 : 0.98,
+                }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.35, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Card className="group h-full flex flex-col">

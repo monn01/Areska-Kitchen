@@ -7,25 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Magnetic } from "@/components/ui/Magnetic";
 import { buildWhatsAppLink, DEFAULT_WA_MESSAGE } from "@/lib/utils";
 
-const container = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 24 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
-  },
-};
-
 export function Hero() {
   const shouldReduceMotion = useReducedMotion();
   const [isDesktop, setIsDesktop] = useState(false);
@@ -42,41 +23,53 @@ export function Hero() {
   const { scrollY } = useScroll();
   const parallaxY = useTransform(scrollY, [0, 800], [0, 800 * 0.15]);
 
+  const container = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: shouldReduceMotion ? 0 : 0.15,
+        delayChildren: shouldReduceMotion ? 0 : 0.1,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 24 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: shouldReduceMotion ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] as const },
+    },
+  };
+
   return (
     <section
       id="beranda"
       className="relative overflow-hidden bg-cream-100 pt-32 pb-20 sm:pt-40 sm:pb-28"
     >
       <div className="mx-auto grid max-w-container gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
-        <motion.div
-          variants={shouldReduceMotion ? undefined : container}
-          initial={shouldReduceMotion ? undefined : "hidden"}
-          animate={shouldReduceMotion ? undefined : "show"}
-        >
+        <motion.div variants={container} initial="hidden" animate="show">
           <motion.p
-            variants={shouldReduceMotion ? undefined : item}
+            variants={item}
             className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-green-500"
           >
             a taste of home
           </motion.p>
           <motion.h1
-            variants={shouldReduceMotion ? undefined : item}
+            variants={item}
             className="font-heading text-4xl font-semibold leading-[1.1] text-green-700 text-balance sm:text-5xl lg:text-6xl"
           >
             Masakan Rumahan, Rasa yang Selalu Dirindukan
           </motion.h1>
           <motion.p
-            variants={shouldReduceMotion ? undefined : item}
+            variants={item}
             className="mt-6 max-w-lg text-lg leading-relaxed text-green-700/80"
           >
             Areska Kitchen hadir untuk memberikan hidangan rumahan yang lezat,
             higienis, dan dibuat dengan penuh cinta — untuk instansi, sekolah,
             maupun acara pribadi Anda.
           </motion.p>
-          <motion.div
-            variants={shouldReduceMotion ? undefined : item}
-            className="mt-8 flex flex-wrap items-center gap-4"
-          >
+          <motion.div variants={item} className="mt-8 flex flex-wrap items-center gap-4">
             <Button href="#menu" variant="secondary">
               Lihat Menu
             </Button>
@@ -92,19 +85,16 @@ export function Hero() {
               </Button>
             </Magnetic>
           </motion.div>
-          <motion.p
-            variants={shouldReduceMotion ? undefined : item}
-            className="mt-4 text-sm text-green-700/80"
-          >
+          <motion.p variants={item} className="mt-4 text-sm text-green-700/80">
             Sistem pemesanan online segera hadir — untuk saat ini, pesan
             langsung lewat WhatsApp.
           </motion.p>
         </motion.div>
 
         <motion.div
-          initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.96 }}
-          animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: shouldReduceMotion ? 1 : 0, scale: shouldReduceMotion ? 1 : 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.7, delay: shouldReduceMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="relative"
         >
           <motion.div
@@ -123,11 +113,7 @@ export function Hero() {
           </motion.div>
 
           <motion.div
-            animate={
-              shouldReduceMotion
-                ? undefined
-                : { scale: [1, 1.03, 1] }
-            }
+            animate={shouldReduceMotion ? undefined : { scale: [1, 1.03, 1] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             className="absolute -bottom-6 -left-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-600 text-center shadow-lg sm:h-28 sm:w-28"
           >
