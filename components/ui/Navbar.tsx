@@ -80,6 +80,7 @@ export function Navbar() {
             target="_blank"
             rel="noopener noreferrer"
             variant="primary"
+            confirmBeforeNavigate
             className="text-sm px-5 py-2.5"
           >
             Pesan Sekarang

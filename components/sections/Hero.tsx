@@ -86,11 +86,19 @@ export function Hero() {
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="primary"
+                confirmBeforeNavigate
               >
                 Pesan Sekarang
               </Button>
             </Magnetic>
           </motion.div>
+          <motion.p
+            variants={shouldReduceMotion ? undefined : item}
+            className="mt-4 text-sm text-green-700/60"
+          >
+            Sistem pemesanan online segera hadir — untuk saat ini, pesan
+            langsung lewat WhatsApp.
+          </motion.p>
         </motion.div>
 
         <motion.div

@@ -1,7 +1,8 @@
 "use client";
 
-import { forwardRef, type MouseEvent } from "react";
+import { forwardRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,8 @@ interface ButtonAsLink extends BaseProps {
   target?: string;
   rel?: string;
   onClick?: (e: MouseEvent) => void;
+  /** Tampilkan micro-interaction check singkat sebelum redirect (DESIGN.md §4.9) — dipakai untuk CTA WhatsApp. */
+  confirmBeforeNavigate?: boolean;
 }
 
 type ButtonProps = ButtonAsButton | ButtonAsLink;
@@ -45,6 +48,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
   function Button({ variant = "primary", className, children, ...props }, ref) {
     const shouldReduceMotion = useReducedMotion();
     const isGhost = variant === "ghost";
+    const [confirming, setConfirming] = useState(false);
 
     const motionProps = shouldReduceMotion || isGhost
       ? {}
@@ -55,20 +59,43 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         };
 
     if ("href" in props && props.href) {
-      const { href, target, rel, onClick } = props;
+      const { href, target, rel, onClick, confirmBeforeNavigate } = props;
       const isExternal = href.startsWith("http") || href.startsWith("https://wa.me");
+
       if (isExternal) {
+        const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+          onClick?.(e);
+          if (!confirmBeforeNavigate || confirming) return;
+          e.preventDefault();
+          setConfirming(true);
+          window.setTimeout(() => {
+            window.open(href, target ?? "_blank", "noopener,noreferrer");
+            setConfirming(false);
+          }, 450);
+        };
+
         return (
           <motion.a
             ref={ref as React.Ref<HTMLAnchorElement>}
             href={href}
             target={target}
             rel={rel}
-            onClick={onClick}
+            onClick={handleClick}
             className={cn(baseClasses, variantClasses[variant], className)}
             {...motionProps}
           >
-            {children}
+            {confirming ? (
+              <motion.span
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="inline-flex items-center gap-2"
+              >
+                <Check className="h-4 w-4" strokeWidth={2} />
+                Terkirim
+              </motion.span>
+            ) : (
+              children
+            )}
           </motion.a>
         );
       }
