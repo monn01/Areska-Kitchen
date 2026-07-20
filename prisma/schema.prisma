@@ -1,0 +1,123 @@
+// Areska Kitchen — Prisma schema
+// Fase 1: model disiapkan untuk kebutuhan Fase 2/3, tapi landing page masih pakai data statis (lib/data.ts).
+// Lihat PRD.md §10-11 untuk rationale arsitektur.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductCategory {
+  NASI_KOTAK
+  PRASMANAN
+  SNACK_BOX
+  PEMPEK_LAINNYA
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  category    ProductCategory
+  name        String
+  description String
+  priceMin    Int
+  priceMax    Int
+  imageUrl    String?
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([category])
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String?
+  quote     String
+  isFeatured Boolean @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  logoUrl   String?
+  isVisible Boolean  @default(false) // baru true setelah izin resmi didapat (PRD §16.1)
+  createdAt DateTime @default(now())
+}
+
+// --- Fase 2 (E-commerce/Ordering) ---
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  customerName  String
+  customerPhone String
+  status      OrderStatus @default(PENDING)
+  isCustomEvent Boolean   @default(false) // prasmanan/event besar, butuh konfirmasi manual (PRD §7)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       OrderItem[]
+  transaction Transaction?
+  user        User?       @relation(fields: [userId], references: [id])
+  userId      String?
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  priceEach Int
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  order         Order    @relation(fields: [orderId], references: [id])
+  orderId       String   @unique
+  amount        Int
+  paymentMethod String?
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  orders Order[]
+}
+
+// --- Fase 3 (Dashboard Admin / Keuangan) ---
+
+model FinancialRecord {
+  id                String   @id @default(cuid())
+  periodStart       DateTime
+  periodEnd         DateTime
+  modal             Int
+  operationalCost   Int      @default(0)
+  grossProfit       Int      @default(0) // dihitung dari agregat Transaction
+  netProfit         Int      @default(0) // grossProfit - operationalCost
+  notes             String?
+  createdAt         DateTime @default(now())
+}
