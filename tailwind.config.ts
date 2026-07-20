@@ -88,6 +88,14 @@ const config: Config = {
       maxWidth: {
         container: "1280px",
       },
+      keyframes: {
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
+        },
+      },
+      animation: {
+        shimmer: "shimmer 2.2s infinite",
+      },
     },
   },
   plugins: [],

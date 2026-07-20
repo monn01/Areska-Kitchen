@@ -4,6 +4,7 @@ import { Hero } from "@/components/sections/Hero";
 import { TrustIndicators } from "@/components/sections/TrustIndicators";
 import { About } from "@/components/sections/About";
 import { TrustedBy } from "@/components/sections/TrustedBy";
+import { Menu } from "@/components/sections/Menu";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
         <TrustIndicators />
         <About />
         <TrustedBy />
+        <Menu />
       </main>
       <Footer />
     </>
