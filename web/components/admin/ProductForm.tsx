@@ -3,7 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { createProduct, updateProduct, type ProductFormState } from "@/lib/actions/products";
-import { CATEGORY_ORDER, CATEGORY_LABELS } from "@/lib/product-categories";
+import { CATEGORY_ORDER, CATEGORY_LABELS, OCCASION_ORDER, OCCASION_LABELS } from "@/lib/product-categories";
 import type { Product } from "@prisma/client";
 
 const CATEGORIES: { value: Product["category"]; label: string }[] = CATEGORY_ORDER.map((value) => ({
@@ -123,6 +123,30 @@ export function ProductForm({ product }: { product?: Product }) {
         />
         Tandai sebagai &ldquo;Paket Populer&rdquo; (tampil di landing page & badge katalog)
       </label>
+
+      <div>
+        <p className={labelClass}>Cocok untuk Acara (Occasion)</p>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {OCCASION_ORDER.map((occasion) => (
+            <label
+              key={occasion}
+              className="flex items-center gap-2 text-sm font-medium text-green-700"
+            >
+              <input
+                type="checkbox"
+                name="occasions"
+                value={occasion}
+                defaultChecked={product?.occasions?.includes(occasion) ?? false}
+                className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-orange-300"
+              />
+              {OCCASION_LABELS[occasion]}
+            </label>
+          ))}
+        </div>
+        <p className="mt-1 text-xs text-green-700/60">
+          Dipakai untuk filter &ldquo;Occasion&rdquo; di katalog — boleh pilih lebih dari satu.
+        </p>
+      </div>
 
       {state.error && <p className="text-sm text-[#B3432E]">{state.error}</p>}
 

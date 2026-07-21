@@ -19,6 +19,7 @@ const productSchema = z.object({
     .or(z.literal("")),
   isActive: z.coerce.boolean(),
   isPopular: z.coerce.boolean(),
+  occasions: z.array(z.enum(["MEETING", "WEDDING", "BIRTHDAY", "GATHERING"])),
 });
 
 export type ProductFormState = { error?: string };
@@ -34,6 +35,7 @@ export async function createProduct(_prevState: ProductFormState, formData: Form
     imageUrl: formData.get("imageUrl"),
     isActive: formData.get("isActive") === "on",
     isPopular: formData.get("isPopular") === "on",
+    occasions: formData.getAll("occasions"),
   });
 
   if (!parsed.success) {
@@ -65,6 +67,7 @@ export async function updateProduct(
     imageUrl: formData.get("imageUrl"),
     isActive: formData.get("isActive") === "on",
     isPopular: formData.get("isPopular") === "on",
+    occasions: formData.getAll("occasions"),
   });
 
   if (!parsed.success) {

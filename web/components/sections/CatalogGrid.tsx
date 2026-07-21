@@ -4,9 +4,15 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Check, Plus } from "lucide-react";
 import { ProductImage } from "@/components/ui/ProductImage";
-import { CATEGORY_ORDER, CATEGORY_LABELS } from "@/lib/product-categories";
+import {
+  CATEGORY_ORDER,
+  CATEGORY_LABELS,
+  OCCASION_ORDER,
+  OCCASION_LABELS,
+} from "@/lib/product-categories";
 import { useCart } from "@/lib/cart-context";
-import type { Product, ProductCategory } from "@prisma/client";
+import { cn } from "@/lib/utils";
+import type { Product, ProductCategory, ProductOccasion } from "@prisma/client";
 
 type SortOption = "popular" | "price-asc" | "price-desc" | "name";
 
@@ -55,7 +61,8 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={`/katalog/${product.id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl bg-cream-50 shadow-[0_2px_12px_rgba(31,77,58,0.08)] transition-shadow duration-base hover:shadow-[0_10px_28px_rgba(31,77,58,0.16)]">
+      className="group flex h-full flex-col overflow-hidden rounded-2xl bg-cream-50 shadow-[0_2px_12px_rgba(31,77,58,0.08)] transition-shadow duration-base hover:shadow-[0_10px_28px_rgba(31,77,58,0.16)]"
+    >
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         <ProductImage
           src={product.imageUrl}
@@ -90,6 +97,62 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
+const THUMB_CLASSES =
+  "pointer-events-none absolute inset-x-0 top-1/2 h-1.5 w-full -translate-y-1/2 appearance-none bg-transparent " +
+  "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-cream-50 [&::-webkit-slider-thumb]:bg-orange-500 [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-pointer " +
+  "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-cream-50 [&::-moz-range-thumb]:bg-orange-500 [&::-moz-range-thumb]:cursor-pointer";
+
+function PriceRangeFilter({
+  min,
+  max,
+  value,
+  onChange,
+}: {
+  min: number;
+  max: number;
+  value: [number, number];
+  onChange: (value: [number, number]) => void;
+}) {
+  const [lo, hi] = value;
+  const span = Math.max(max - min, 1);
+  const leftPct = ((lo - min) / span) * 100;
+  const rightPct = ((hi - min) / span) * 100;
+
+  if (min >= max) return null;
+
+  return (
+    <div>
+      <div className="relative h-4">
+        <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-green-100" />
+        <div
+          className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-orange-400"
+          style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={lo}
+          onChange={(e) => onChange([Math.min(Number(e.target.value), hi), hi])}
+          className={THUMB_CLASSES}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={hi}
+          onChange={(e) => onChange([lo, Math.max(Number(e.target.value), lo)])}
+          className={THUMB_CLASSES}
+        />
+      </div>
+      <div className="mt-2 flex justify-between text-xs text-green-700/70">
+        <span>Rp {lo.toLocaleString("id-ID")}</span>
+        <span>Rp {hi.toLocaleString("id-ID")}</span>
+      </div>
+    </div>
+  );
+}
+
 export function CatalogGrid({ products }: { products: Product[] }) {
   const availableCategories = CATEGORY_ORDER.filter((cat) =>
     products.some((p) => p.category === cat),
@@ -97,7 +160,15 @@ export function CatalogGrid({ products }: { products: Product[] }) {
   const [activeCategories, setActiveCategories] = useState<Set<ProductCategory>>(
     () => new Set(availableCategories),
   );
+  const [activeOccasions, setActiveOccasions] = useState<Set<ProductOccasion>>(() => new Set());
   const [sortBy, setSortBy] = useState<SortOption>("popular");
+
+  const priceBounds = useMemo<[number, number]>(() => {
+    if (products.length === 0) return [0, 0];
+    const prices = products.map((p) => p.price);
+    return [Math.min(...prices), Math.max(...prices)];
+  }, [products]);
+  const [priceRange, setPriceRange] = useState<[number, number]>(priceBounds);
 
   function toggleCategory(cat: ProductCategory) {
     setActiveCategories((prev) => {
@@ -111,8 +182,26 @@ export function CatalogGrid({ products }: { products: Product[] }) {
     });
   }
 
+  function toggleOccasion(occasion: ProductOccasion) {
+    setActiveOccasions((prev) => {
+      const next = new Set(prev);
+      if (next.has(occasion)) {
+        next.delete(occasion);
+      } else {
+        next.add(occasion);
+      }
+      return next;
+    });
+  }
+
   const filtered = useMemo(() => {
-    const list = products.filter((p) => activeCategories.has(p.category));
+    const list = products.filter(
+      (p) =>
+        activeCategories.has(p.category) &&
+        p.price >= priceRange[0] &&
+        p.price <= priceRange[1] &&
+        (activeOccasions.size === 0 || p.occasions.some((o) => activeOccasions.has(o))),
+    );
     const sorted = [...list];
     switch (sortBy) {
       case "price-asc":
@@ -130,7 +219,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
         break;
     }
     return sorted;
-  }, [products, activeCategories, sortBy]);
+  }, [products, activeCategories, activeOccasions, priceRange, sortBy]);
 
   if (availableCategories.length === 0) {
     return (
@@ -140,25 +229,67 @@ export function CatalogGrid({ products }: { products: Product[] }) {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-      <aside className="lg:sticky lg:top-24 lg:h-fit">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
-          Kategori
-        </h2>
-        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 lg:flex-col">
-          {availableCategories.map((cat) => (
-            <label
-              key={cat}
-              className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-green-700"
-            >
-              <input
-                type="checkbox"
-                checked={activeCategories.has(cat)}
-                onChange={() => toggleCategory(cat)}
-                className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-orange-300"
-              />
-              {CATEGORY_LABELS[cat]}
-            </label>
-          ))}
+      <aside className="space-y-8 lg:sticky lg:top-24 lg:h-fit">
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
+            Kategori
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 lg:flex-col">
+            {availableCategories.map((cat) => (
+              <label
+                key={cat}
+                className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-green-700"
+              >
+                <input
+                  type="checkbox"
+                  checked={activeCategories.has(cat)}
+                  onChange={() => toggleCategory(cat)}
+                  className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-orange-300"
+                />
+                {CATEGORY_LABELS[cat]}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
+            Harga (per unit)
+          </h2>
+          <div className="mt-4">
+            <PriceRangeFilter
+              min={priceBounds[0]}
+              max={priceBounds[1]}
+              value={priceRange}
+              onChange={setPriceRange}
+            />
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
+            Occasion
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {OCCASION_ORDER.map((occasion) => {
+              const active = activeOccasions.has(occasion);
+              return (
+                <button
+                  key={occasion}
+                  type="button"
+                  onClick={() => toggleOccasion(occasion)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors duration-fast",
+                    active
+                      ? "border-green-600 bg-green-600 text-cream-50"
+                      : "border-green-200 text-green-700 hover:bg-green-50",
+                  )}
+                >
+                  {OCCASION_LABELS[occasion]}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </aside>
 
@@ -186,7 +317,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
 
         {filtered.length === 0 ? (
           <p className="py-16 text-center text-green-700/60">
-            Tidak ada menu yang cocok dengan filter kategori ini.
+            Tidak ada menu yang cocok dengan filter ini.
           </p>
         ) : (
           <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">

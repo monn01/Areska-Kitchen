@@ -253,7 +253,14 @@ User minta kembali ke referensi Figma dan kali ini terapkan ketiga frame-nya (Da
 - [x] **Perbaikan kecil ditemukan saat verifikasi**: `ProductImage.tsx` fallback ("Foto segera hadir") awalnya didesain untuk kartu besar (~280px+), jadi terlihat sesak saat dipakai di thumbnail 64px (keranjang & checkout) — ikon & teks fallback diperkecil (`h-5 w-5`, `text-[10px]`) supaya proporsional di kedua ukuran
 - [x] Diverifikasi lewat browser: klik kartu di katalog → halaman detail tampil benar (gambar, badge, related products dari kategori sama) → ubah jumlah & tambah ke keranjang → badge count naik → checkout menampilkan item dengan gambar+stepper+harga yang benar dan bisa diubah langsung dari situ. `tsc --noEmit`/`next lint` bersih.
 
-### Phase 17 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
+### Phase 17 — Filter Harga & Occasion di Katalog, Footer ✅ selesai 21 Juli 2026
+Susulan Phase 16 — sebelumnya sengaja tidak dibuat karena dianggap "data palsu" tanpa model di belakangnya, tapi user minta tetap dibangun. Filter harga sebenarnya sudah berbasis data asli (kolom `price` yang sudah ada) jadi aman; filter occasion butuh field baru.
+- [x] **Field baru** `Product.occasions` (Prisma, tipe `ProductOccasion[]` — native Postgres array, enum `MEETING`/`WEDDING`/`BIRTHDAY`/`GATHERING`), migrasi `20260721200000_product_occasions`. Checkbox multi-pilih ditambahkan di `ProductForm.tsx` admin; 9 produk seed ditandai occasion yang masuk akal (mis. nasi kotak → Meeting/Kumpul Keluarga, prasmanan lengkap → Pernikahan/Kumpul Keluarga)
+- [x] `components/sections/CatalogGrid.tsx` — filter "Harga (per unit)": slider dua sisi (dual-thumb, dua `<input type="range">` ditumpuk pakai teknik CSS standar `[&::-webkit-slider-thumb]`/`[&::-moz-range-thumb]`), rentang otomatis dari harga min/max produk yang ada (bukan angka hardcode). Filter "Occasion": pill multi-select (kosong = tampilkan semua, pilih salah satu untuk mempersempit) — beda pola dari checkbox Kategori (yang defaultnya semua tercentang/opt-out), occasion defaultnya kosong/opt-in karena sifatnya menyempitkan bukan mengecualikan
+- [x] `Footer.tsx` — link navigasi diubah dari anchor relatif (`#beranda`, dst.) jadi absolut (`/#beranda`, dst.) supaya tetap benar dipakai di luar landing page, bukan cuma di `app/page.tsx`; ditambahkan ke `app/katalog/page.tsx` (di luar area yang di-blur gerbang login, sama seperti header)
+- [x] Diverifikasi lewat browser: slider harga & pill occasion memfilter grid dengan benar (dicoba occasion "Pernikahan" → cuma tampil 1 produk yang cocok), footer tampil lengkap di bawah grid katalog. `tsc --noEmit`/`next lint` bersih.
+
+### Phase 18 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
 - [x] `tsc --noEmit` dan `next lint` bersih di setiap tahap (Phase 4-11)
 - [x] Smoke test dasar: server boot bersih tanpa error, route inti (`/`, `/checkout`, `/admin`, `/account`, `/admin/login`, `/account/login`, `/account/register`) merespons kode HTTP yang benar (200 untuk publik, 307 redirect untuk yang terproteksi tanpa sesi), konten dari database (produk/testimoni/dipercaya-oleh) terverifikasi tampil di homepage
 - [ ] **(instruksi user, berlaku mulai sesi ini)**: verifikasi fitur secara penuh di browser (klik-per-klik alur order, admin CRUD, dst.) dilakukan oleh user sendiri, bukan lewat automation tool — lebih cepat, dan feedback datang langsung dari pengguna nyata alih-alih tool otomasi yang beberapa kali kena kendala teknis di sesi-sesi sebelumnya
@@ -262,7 +269,7 @@ User minta kembali ke referensi Figma dan kali ini terapkan ketiga frame-nya (Da
 - [ ] Security review: verifikasi signature webhook (sudah diimplementasi, perlu dites dengan transaksi sandbox asli), proteksi route admin/account, tidak ada data kartu tersimpan sendiri (PCI-DSS via Midtrans)
 - [ ] Test responsive mobile untuk seluruh flow baru (checkout, keranjang, admin)
 
-### Phase 18 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
+### Phase 19 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
 - [ ] Hosting final: **Vercel (app) + Neon (Postgres)** — konsisten dengan keputusan Phase 1
 - [ ] Setup domain (masih pending dari Fase 1 — `.id`/`.co.id`/`.com`)
 - [ ] Migrasi Midtrans dari sandbox ke production keys

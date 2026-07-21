@@ -53,11 +53,11 @@ export function Footer() {
             </h3>
             <ul className="space-y-2 text-sm">
               {[
-                ["Beranda", "#beranda"],
-                ["Menu", "#menu"],
-                ["Tentang Kami", "#tentang-kami"],
-                ["Testimoni", "#testimoni"],
-                ["Kontak", "#kontak"],
+                ["Beranda", "/#beranda"],
+                ["Menu", "/#menu"],
+                ["Tentang Kami", "/#tentang-kami"],
+                ["Testimoni", "/#testimoni"],
+                ["Kontak", "/#kontak"],
               ].map(([label, href]) => (
                 <li key={href}>
                   <a href={href} className="text-cream-100/80 hover:text-orange-300 transition-colors">

@@ -18,8 +18,17 @@ enum ProductCategory {
   PEMPEK_LAINNYA
 }
 
+/// Jenis acara yang cocok untuk produk ini — dipakai untuk filter "Occasion" di katalog
+/// (referensi desain Figma). Ditandai admin manual per produk, mirip pola isPopular.
+enum ProductOccasion {
+  MEETING
+  WEDDING
+  BIRTHDAY
+  GATHERING
+}
+
 model Product {
-  id          String          @id @default(cuid())
+  id          String            @id @default(cuid())
   category    ProductCategory
   name        String
   description String
@@ -27,12 +36,13 @@ model Product {
   /// dari Fase 1 yang cuma untuk tampilan kisaran, tidak bisa dipakai transaksi nyata.
   price       Int
   imageUrl    String?
-  isActive    Boolean         @default(true)
+  isActive    Boolean           @default(true)
   /// Ditandai admin untuk tampil di "Paket Populer" (landing page) & badge "Populer" di
   /// katalog — bukan dihitung otomatis dari penjualan, murni kurasi manual dulu.
-  isPopular   Boolean         @default(false)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  isPopular   Boolean           @default(false)
+  occasions   ProductOccasion[] @default([])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   orderItems OrderItem[]
 

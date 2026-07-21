@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MinimalHeader } from "@/components/ui/MinimalHeader";
+import { Footer } from "@/components/ui/Footer";
 import { CatalogGrid } from "@/components/sections/CatalogGrid";
 import { KatalogAuthGate } from "@/components/auth/KatalogAuthGate";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,8 @@ export default async function KatalogPage() {
           <CatalogGrid products={products} />
         </div>
       </div>
+
+      <Footer />
 
       {!session && <KatalogAuthGate />}
     </div>
