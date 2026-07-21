@@ -123,17 +123,17 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 ---
 
 ### Phase 1 — Infrastruktur & Database
-- [ ] Setup PostgreSQL (lokal untuk dev — Docker Compose direkomendasikan; hosting production **(butuh keputusan)**: VPS terkelola sendiri vs managed Postgres seperti Neon/Supabase/Railway — Vercel tidak host Postgres native)
+- [ ] Setup PostgreSQL lokal via Docker Compose (dev) — hosting production: **Neon** (managed Postgres, keputusan final 21 Juli 2026: gratis untuk skala bisnis ini, nol maintenance server, cocok dipasangkan dengan Vercel)
 - [ ] Migrasi `DATABASE_URL` dari placeholder ke koneksi Postgres asli, jalankan `prisma migrate dev` pertama kali
 - [ ] Review ulang schema `Product`/`Order`/`OrderItem`/`Transaction`/`User` (sudah ada di `prisma/schema.prisma` sejak Fase 1) — sesuaikan field yang kurang (mis. `stock`/`isAvailable` per produk kalau dibutuhkan, `Order.notes` untuk request khusus)
 - [ ] Tambah model untuk `Testimonial` & `Client` jadi benar-benar dinamis (sudah ada modelnya, tinggal dipakai) — termasuk field `row` untuk `Client` (marquee 2-baris "Dipercaya Oleh" yang baru dibangun di Fase 1 Phase 11, sudah didesain siap untuk ini)
 - [ ] Seed data awal dari `lib/data.ts` (menu, testimoni placeholder) ke database, supaya transisi statis→dinamis tidak kosong
 
 ### Phase 2 — Autentikasi
-- [ ] **(butuh keputusan)** Strategi login admin: credentials sederhana (email+password, 1 akun) vs magic link — untuk 1 pengguna (orang tua), credentials sederhana kemungkinan cukup dan lebih gampang dipakai
+- [ ] Login admin: credentials sederhana (email+password, 1 akun) — cukup untuk 1 pengguna (orang tua)
 - [ ] Setup NextAuth/Auth.js, session strategy (JWT vs database session — database session lebih aman untuk revoke akses)
 - [ ] Middleware proteksi route `/admin/*`
-- [ ] **(butuh keputusan)** Akun pelanggan: guest checkout saja (lebih cepat konversi, sesuai rekomendasi PRD §7) vs wajib akun — default rekomendasi: guest checkout untuk retail (nasi kotak/snack box), opsional akun untuk lihat riwayat order
+- [ ] Akun pelanggan (keputusan final 21 Juli 2026: **guest checkout + opsional akun**) — checkout tanpa daftar tetap bisa (retail: nasi kotak/snack box), tapi pelanggan juga bisa daftar akun untuk riwayat order otomatis tersimpan
 
 ### Phase 3 — Dashboard Admin: Manajemen Konten
 - [ ] Layout admin (sidebar/nav terpisah dari landing page, bukan bagian dari navbar publik)
@@ -166,10 +166,10 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 - [ ] Alur status order lengkap: `PENDING` → `CONFIRMED` → `PROCESSING` → `COMPLETED` (+ `CANCELLED`) — enum `OrderStatus` sudah ada di schema
 - [ ] Admin: aksi konfirmasi manual untuk order custom/event (Phase 5) sebelum lanjut ke pembayaran
 - [ ] Halaman tracking status order untuk pelanggan (by order ID, tanpa perlu login)
-- [ ] **(butuh keputusan)** Notifikasi perubahan status: WhatsApp Business API resmi (perlu verifikasi Meta Business, berbayar) vs pendekatan sederhana (link `wa.me` pre-filled seperti CTA di Fase 1, dikirim manual/semi-otomatis) — rekomendasi mulai dari pendekatan sederhana dulu, upgrade ke API resmi kalau volume order sudah signifikan
+- [ ] Notifikasi perubahan status (keputusan final 21 Juli 2026: **link WhatsApp manual/semi-otomatis**, sama seperti CTA `wa.me` di Fase 1) — pesan pre-filled berisi status terbaru, admin tinggal klik kirim; upgrade ke WhatsApp Business API resmi ditunda sampai volume order signifikan
 
-### Phase 8 — Akun Pelanggan (opsional, tergantung Phase 2)
-- [ ] Registrasi & login pelanggan (kalau diputuskan tidak guest-only)
+### Phase 8 — Akun Pelanggan (opsional, sesuai keputusan Phase 2: guest checkout + opsional akun)
+- [ ] Registrasi & login pelanggan
 - [ ] Halaman riwayat order pelanggan
 
 ### Phase 9 — Testing & QA
@@ -179,7 +179,7 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 - [ ] Test responsive mobile untuk seluruh flow baru (checkout, admin) — dengan pelajaran dari Fase 1: jangan andalkan automation tool session ini untuk verifikasi visual mobile, selalu cross-check di device asli
 
 ### Phase 10 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
-- [ ] **(butuh keputusan)** Hosting final: Vercel (perlu Postgres eksternal terpisah, mis. Neon) vs VPS+Docker Compose (semua dalam satu tempat, lebih murah untuk skala kecil, tapi maintenance manual)
+- [ ] Hosting final: **Vercel (app) + Neon (Postgres)** — konsisten dengan keputusan Phase 1
 - [ ] Setup domain (masih pending dari Fase 1 — `.id`/`.co.id`/`.com`)
 - [ ] Migrasi Midtrans dari sandbox ke production keys
 - [ ] Environment secrets production (`DATABASE_URL`, `NEXTAUTH_SECRET`, Midtrans keys)
@@ -188,12 +188,17 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 
 ---
 
-## Checklist Keputusan & Input Klien Sebelum/Selama Fase 2
+## Keputusan Arsitektur Fase 2 (final, dikonfirmasi 21 Juli 2026)
+
+| Keputusan | Pilihan | Alasan singkat |
+|---|---|---|
+| Hosting database | **Neon** (managed Postgres), Docker Compose untuk lokal/dev | Gratis untuk skala bisnis ini, nol maintenance server, dibanding VPS yang selalu ada biaya bulanan sejak hari pertama meski belum ada order |
+| Auth pelanggan | **Guest checkout + opsional akun** | Checkout tetap cepat tanpa hambatan daftar, tapi pelanggan yang mau bisa daftar untuk riwayat order otomatis |
+| Notifikasi status order | **Link WhatsApp manual/semi-otomatis** (`wa.me` pre-filled) | Gratis, tidak perlu verifikasi Meta Business, cukup untuk volume order awal — upgrade ke API resmi kalau volume sudah signifikan |
+
+## Checklist Input Klien Sebelum/Selama Fase 2
 
 - [ ] Dokumen legal bisnis (NIB/NPWP) — kesiapan untuk verifikasi akun bisnis Midtrans
-- [ ] Strategi akun pelanggan: guest checkout only vs opsional login
-- [ ] Notifikasi status order: WhatsApp API resmi vs pendekatan manual/semi-otomatis
-- [ ] Hosting production: Vercel+Postgres eksternal vs VPS+Docker Compose
 - [ ] (Carry-over dari Fase 1, masih relevan) Nomor WA Business asli, menu & harga final, foto produk asli, testimoni asli, izin nama/logo instansi, keputusan domain
 
 ---
