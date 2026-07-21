@@ -53,7 +53,7 @@ export function Hero() {
   return (
     <section
       id="beranda"
-      className="relative overflow-hidden bg-cream-100 pt-24 pb-20 sm:pt-28 sm:pb-28 lg:pb-0"
+      className="relative overflow-hidden bg-cream-100 pt-24 pb-20 sm:pt-28 sm:pb-28 lg:pb-12"
     >
       {/* Desktop only: foto bleed ke tepi kanan/atas/bawah section (bukan kartu terpisah),
           memudar ke background cream lewat mask di sisi kiri — sesuai referensi

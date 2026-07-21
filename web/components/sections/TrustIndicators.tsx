@@ -16,7 +16,7 @@ export function TrustIndicators() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="border-y border-green-100 bg-cream-100">
+    <section className="border-y border-green-100 bg-cream-50">
       <div className="mx-auto max-w-container px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 sm:gap-6">
           {trustIndicators.map((indicator, i) => {
