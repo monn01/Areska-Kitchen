@@ -147,46 +147,73 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 - **Bug ditemukan & diperbaiki saat testing**: scroll wheel di atas input harga (`type="number"`) yang sedang fokus mengubah nilainya tanpa sengaja (kuirk browser bawaan HTML). Fix: `onWheel={(e) => e.currentTarget.blur()}` di `ProductForm.tsx`
 - Diverifikasi end-to-end via browser: tambah/edit produk berhasil (termasuk cek data tersimpan benar di tabel), semua halaman list (Produk, Testimoni, Dipercaya Oleh, Order) menampilkan data seed dengan benar, dashboard menampilkan angka statistik akurat. Tombol Hapus tidak dites lewat automation (pakai `confirm()` native yang nge-block tool CDP — aman untuk user asli, cuma tidak kompatibel dengan automation sesi ini), diverifikasi lewat code review saja
 
-### Phase 4 — Katalog Publik Dinamis
-- [ ] Ganti `menuItems`/`trustIndicators`/`testimonials`/`trustedBrands` statis di `lib/data.ts` jadi query database (Server Component)
-- [ ] Halaman detail produk (opsional — atau tetap grid+card seperti Fase 1, tergantung kebutuhan checkout)
-- [ ] Filter kategori tetap jalan seperti Fase 1, sekarang sumber datanya dinamis
+### Phase 4 — Katalog Publik Dinamis ✅ selesai 21 Juli 2026
+- [x] `Menu`/`Testimonials`/`TrustedBy` diubah jadi Server Component yang query database langsung — masing-masing dipecah jadi wrapper Server (fetch data) + sub-komponen Client (interaktivitas: tab kategori, carousel, marquee) karena Client Component tidak bisa `async`
+- [x] `lib/data.ts` dibersihkan — cuma sisa `trustIndicators` & `businessInfo` yang memang tetap statis (tidak ada model Prisma untuk itu, sesuai scope PRD)
+- [x] Filter kategori tetap jalan, sumber datanya sekarang dinamis (`lib/product-categories.ts` — konstanta kategori dipakai bareng oleh sisi publik & admin, hindari duplikasi)
+- [x] **Bug laten ditemukan & diperbaiki**: `next.config.mjs` belum ada `images.remotePatterns`, jadi `next/image` bakal reject URL gambar eksternal yang diinput admin (semua host HTTPS sekarang diizinkan)
+- [x] Section "Dipercaya Oleh" & "Testimoni" sekarang `return null` kalau tidak ada data `isVisible`/`isFeatured` — bukan lagi selalu tampil dengan placeholder (disepakati dengan user: 12 entri seed di-set `isVisible: true` supaya perilaku terlihat sama seperti sebelumnya sampai admin ganti dengan data instansi asli)
 
-### Phase 5 — Keranjang & Checkout
-- [ ] State keranjang sisi klien (persist ke localStorage, guest-friendly)
-- [ ] UI keranjang (drawer atau halaman terpisah): tambah/kurang qty, hapus item, subtotal
-- [ ] Halaman checkout: info kontak, alamat/catatan pengiriman
-- [ ] **Pembeda dua jenis order (PRD §7, wajib)**: order retail (nasi kotak/snack box) → langsung lanjut ke pembayaran; order custom/event besar (prasmanan) → masuk status `PENDING`, butuh konfirmasi manual admin dulu sebelum link pembayaran dikirim — field `Order.isCustomEvent` sudah ada di schema untuk ini
-- [ ] Order tersimpan ke database sebelum proses bayar dimulai
+### Phase 5 — Keranjang, Checkout & Penjadwalan ✅ selesai 21 Juli 2026
+- [x] `lib/cart-context.tsx` — state keranjang via React Context, persist ke localStorage, dipasang di `app/layout.tsx`
+- [x] `components/cart/CartButton.tsx` — ikon + badge jumlah item di navbar, drawer slide-in (tambah/kurang qty, hapus, subtotal)
+- [x] `app/checkout/page.tsx` + `components/checkout/CheckoutForm.tsx` — info pelanggan, alamat, jadwal, kode voucher, ringkasan & total
+- [x] **Pembeda dua jenis order (PRD §7)**: `isCustomEvent` otomatis `true` kalau keranjang berisi produk kategori PRASMANAN — retail lanjut ke Midtrans langsung, custom/event masuk `PENDING` menunggu admin
+- [x] **Penjadwalan (fitur #3, CRITICAL)**: date picker (min besok) + jam 07.00–20.00, validasi cutoff **H-1 20.00 WIB** di server (`lib/settings.ts` — `validateEventDate`), nilai cutoff disimpan di model baru `AppSetting` (single-row, diedit dari `/admin/settings`, bukan hardcode)
+- [x] Tidak ada batas kapasitas harian — sebagai gantinya `AppSetting.retailCheckoutEnabled` jadi toggle darurat admin
+- [x] `lib/actions/checkout.ts` — `createOrder` recompute semua harga dari database (tidak pernah percaya harga dari client), redirect ke `/order/[id]`
 
-### Phase 6 — Integrasi Payment (Midtrans)
-- [ ] **(butuh input klien)** Verifikasi kesiapan dokumen legal bisnis (NIB/NPWP) untuk pendaftaran akun bisnis Midtrans — tanpa ini, tidak bisa lanjut ke akun production (sandbox tetap bisa dipakai untuk development)
-- [ ] Daftar akun Midtrans (mulai dari sandbox/testing), ambil API key
-- [ ] Integrasi Snap API (checkout redirect/popup)
-- [ ] Webhook/callback handler (API route) — update status `Transaction` & `Order` otomatis saat pembayaran berhasil/gagal, dengan verifikasi signature (wajib, jangan percaya payload webhook mentah-mentah)
-- [ ] Halaman hasil: sukses / gagal / pending pembayaran
+### Phase 6 — Ongkir & Area Pengiriman ✅ selesai 21 Juli 2026 (dengan catatan implementasi)
+- [x] Hitung ongkir berbasis jarak & validasi area layanan — **implementasi berbeda dari rencana awal**: alih-alih Google Maps Platform API (butuh API key berbayar + billing account), dipakai **jarak garis lurus (Haversine, `lib/geo.ts`) + Geolocation API bawaan browser** (tombol "Gunakan Lokasi Saat Ini", gratis, tanpa API key). Titik lokasi dapur, radius, dan tarif/km disimpan di `AppSetting`, diedit dari `/admin/settings`
+- [x] Kalau pelanggan tidak memberi izin lokasi, ongkir tidak dihitung otomatis — order tetap dibuat tapi masuk jalur **review manual admin** (bukan langsung ke pembayaran), konsisten dengan pola order custom/event
+- [ ] **(butuh input klien)** Titik lokasi dapur/toko asli (sekarang masih default estimasi pusat kota Pangkalpinang), radius area layanan final, tarif ongkir/km final — WAJIB dikonfirmasi & diubah di `/admin/settings` sebelum go-live, angka sekarang cuma placeholder wajar
+- [ ] Upgrade ke Google Maps Distance Matrix (jarak jalan asli, bukan garis lurus) tetap terbuka sebagai peningkatan nanti kalau dirasa perlu — arsitektur `estimateDeliveryFee()` di `lib/actions/checkout.ts` dirancang supaya gampang diganti tanpa mengubah pemanggilnya
 
-### Phase 7 — Status Order & Notifikasi
-- [ ] Alur status order lengkap: `PENDING` → `CONFIRMED` → `PROCESSING` → `COMPLETED` (+ `CANCELLED`) — enum `OrderStatus` sudah ada di schema
-- [ ] Admin: aksi konfirmasi manual untuk order custom/event (Phase 5) sebelum lanjut ke pembayaran
-- [ ] Halaman tracking status order untuk pelanggan (by order ID, tanpa perlu login)
-- [ ] Notifikasi perubahan status (keputusan final 21 Juli 2026: **link WhatsApp manual/semi-otomatis**, sama seperti CTA `wa.me` di Fase 1) — pesan pre-filled berisi status terbaru, admin tinggal klik kirim; upgrade ke WhatsApp Business API resmi ditunda sampai volume order signifikan
+### Phase 7 — Integrasi Payment (Midtrans) ✅ selesai 21 Juli 2026 (kode; verifikasi akun tertunda)
+- [x] `midtrans-client` terpasang, `lib/midtrans.ts` (Snap client, sandbox by default lewat `MIDTRANS_IS_PRODUCTION`)
+- [x] `lib/actions/payment.ts` — `initiatePayment` bikin transaksi Snap, simpan `midtransOrderId`/`snapToken` ke `Transaction`, redirect ke halaman bayar Midtrans
+- [x] `app/api/midtrans/webhook/route.ts` — verifikasi signature SHA512 (WAJIB, sesuai dokumentasi Midtrans) sebelum update status `Transaction`/`Order`
+- [x] Halaman hasil: `/order/[id]` dipakai sebagai `finish_url` sekaligus halaman tracking; tombol "Bayar Sekarang" (`RetryPaymentButton`) untuk retry kalau transaksi pertama gagal/belum selesai
+- [ ] **(butuh input klien)** Verifikasi kesiapan dokumen legal bisnis (NIB/NPWP) untuk akun bisnis Midtrans production — sandbox (`MIDTRANS_SERVER_KEY`/`MIDTRANS_CLIENT_KEY` di `.env`) masih kosong, perlu didaftarkan dulu di dashboard.sandbox.midtrans.com untuk bisa dites end-to-end
 
-### Phase 8 — Akun Pelanggan (opsional, sesuai keputusan Phase 2: guest checkout + opsional akun)
-- [ ] Registrasi & login pelanggan
-- [ ] Halaman riwayat order pelanggan
+### Phase 8 — Status Order & Notifikasi ✅ selesai 21 Juli 2026
+- [x] Alur status lengkap jalan — webhook Midtrans otomatis set `CONFIRMED`/`CANCELLED`, admin bisa ubah manual lewat dropdown di `/admin/orders/[id]` (`components/admin/OrderStatusControls.tsx`)
+- [x] Admin: tombol "Buat Link Pembayaran" untuk order custom/event (generate Snap link manual setelah admin konfirmasi, dikirim sendiri lewat WA — bukan otomatis, sesuai alur PRD §7)
+- [x] Halaman tracking `/order/[id]` — bisa diakses tanpa login (order id sebagai token akses, cukup acak/tidak bisa ditebak)
+- [x] Notifikasi WA manual — tombol "Kirim Notifikasi WhatsApp" di admin generate link `wa.me` ke **nomor pelanggan** (bukan nomor bisnis) dengan pesan status pre-filled. Ditambah `buildWhatsAppLinkTo()` + `normalizeIndonesianPhone()` baru di `lib/utils.ts` (fungsi lama `buildWhatsAppLink` cuma bisa ke nomor bisnis)
 
-### Phase 9 — Testing & QA
-- [ ] Test end-to-end alur order: browse → keranjang → checkout → bayar (sandbox Midtrans) → webhook update status → konfirmasi
-- [ ] Test CRUD admin (produk, testimoni, dipercaya oleh)
-- [ ] Security review: verifikasi signature webhook, proteksi route admin, tidak ada data kartu tersimpan sendiri (sesuai PRD §12 — PCI-DSS via Midtrans)
-- [ ] Test responsive mobile untuk seluruh flow baru (checkout, admin) — dengan pelajaran dari Fase 1: jangan andalkan automation tool session ini untuk verifikasi visual mobile, selalu cross-check di device asli
+### Phase 9 — Akun Pelanggan & Multi-Alamat ✅ selesai 21 Juli 2026
+- [x] Registrasi (`/account/register`) & login (`/account/login`) pelanggan — pakai `CredentialsProvider` yang sama dengan admin (`isAdmin: false`), tidak perlu provider terpisah
+- [x] `middleware.ts` ditulis ulang dari `withAuth` jadi middleware manual (`getToken` langsung) — supaya `/admin/*` dan `/account/*` bisa redirect ke halaman login masing-masing yang berbeda, sesuatu yang tidak didukung `withAuth` (cuma satu `pages.signIn` global)
+- [x] `/account` — riwayat order (query `Order.userId`) + manajemen alamat tersimpan (fitur #11: `lib/actions/addresses.ts`, model `Address` baru dengan `isDefault`)
+- [x] Ikon akun ditambahkan ke navbar publik (`/account`, middleware otomatis redirect ke login kalau belum masuk)
 
-### Phase 10 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
+### Phase 10 — Voucher & Promo (fitur #10) ✅ selesai 21 Juli 2026
+- [x] Model `Voucher` (`DiscountType`: PERCENTAGE/FIXED, `minOrder`, `validFrom`/`validUntil`, `usageLimit`/`usageCount`)
+- [x] CRUD voucher di `/admin/vouchers` (pola sama dengan CRUD Produk/Testimoni)
+- [x] Validasi kode voucher saat checkout (`checkVoucher` di `lib/actions/checkout.ts`) — cek aktif, tanggal berlaku, batas pemakaian, minimum order
+- [x] Ditempatkan di alur checkout yang sama dengan Phase 5-7 (dibangun bareng dalam satu batch, bukan menyusul terpisah) — tetap **tidak blocking** checkout dasar, kolom voucher opsional
+
+### Phase 11 — Analitik Penjualan Sederhana (fitur #14) ✅ selesai 21 Juli 2026
+- [x] `lib/analytics.ts` (`getSalesSummary`) — total order & pendapatan hari ini/minggu ini/bulan ini, top 5 produk terlaris (agregat `OrderItem`), cuma menghitung order berstatus CONFIRMED/PROCESSING/COMPLETED (bukan yang masih PENDING/CANCELLED)
+- [x] Ditambahkan ke `/admin` (dashboard home yang sudah ada dari Phase 3, diperluas — bukan halaman baru)
+- [x] **Tidak tumpang tindih dengan Fase 3**: cuma statistik order/penjualan, tidak ada kalkulasi modal/biaya operasional/laba bersih — itu tetap di FASE 3 (Dashboard Keuangan) seperti rencana awal
+- [ ] Grafik tren visual (opsional, belum dibangun — angka mentah dulu, cukup untuk kebutuhan saat ini)
+
+### Phase 12 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
+- [x] `tsc --noEmit` dan `next lint` bersih di setiap tahap (Phase 4-11)
+- [x] Smoke test dasar: server boot bersih tanpa error, route inti (`/`, `/checkout`, `/admin`, `/account`, `/admin/login`, `/account/login`, `/account/register`) merespons kode HTTP yang benar (200 untuk publik, 307 redirect untuk yang terproteksi tanpa sesi), konten dari database (produk/testimoni/dipercaya-oleh) terverifikasi tampil di homepage
+- [ ] **(instruksi user, berlaku mulai sesi ini)**: verifikasi fitur secara penuh di browser (klik-per-klik alur order, admin CRUD, dst.) dilakukan oleh user sendiri, bukan lewat automation tool — lebih cepat, dan feedback datang langsung dari pengguna nyata alih-alih tool otomasi yang beberapa kali kena kendala teknis di sesi-sesi sebelumnya
+- [ ] Test end-to-end alur order sungguhan: browse → keranjang → checkout (dengan penjadwalan & ongkir) → bayar (sandbox Midtrans, **butuh `MIDTRANS_SERVER_KEY`/`MIDTRANS_CLIENT_KEY` diisi dulu di `.env`**) → webhook update status → konfirmasi
+- [ ] Test CRUD admin (produk, testimoni, dipercaya oleh, voucher, pengaturan)
+- [ ] Security review: verifikasi signature webhook (sudah diimplementasi, perlu dites dengan transaksi sandbox asli), proteksi route admin/account, tidak ada data kartu tersimpan sendiri (PCI-DSS via Midtrans)
+- [ ] Test responsive mobile untuk seluruh flow baru (checkout, keranjang, admin)
+
+### Phase 13 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
 - [ ] Hosting final: **Vercel (app) + Neon (Postgres)** — konsisten dengan keputusan Phase 1
 - [ ] Setup domain (masih pending dari Fase 1 — `.id`/`.co.id`/`.com`)
 - [ ] Migrasi Midtrans dari sandbox ke production keys
-- [ ] Environment secrets production (`DATABASE_URL`, `NEXTAUTH_SECRET`, Midtrans keys)
+- [ ] Environment secrets production (`DATABASE_URL`, `NEXTAUTH_SECRET`, Midtrans keys, Google Maps API key)
 - [ ] Deploy Fase 1 (landing page, sekarang dengan katalog dinamis) + Fase 2 (ordering) sekaligus
 - [ ] Final review bareng orang tua sebelum go-live
 
@@ -194,15 +221,25 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 
 ## Keputusan Arsitektur Fase 2 (final, dikonfirmasi 21 Juli 2026)
 
+Fitur bernomor (#3, #10, #11, #12, #13, #14, #15) merujuk ke daftar referensi user di `taskplan-eco-rec.md` (sudah dihapus setelah direkonsiliasi ke sini — lihat Log Sesi Kerja).
+
 | Keputusan | Pilihan | Alasan singkat |
 |---|---|---|
 | Hosting database | **Neon** (managed Postgres), Docker Compose untuk lokal/dev | Gratis untuk skala bisnis ini, nol maintenance server, dibanding VPS yang selalu ada biaya bulanan sejak hari pertama meski belum ada order |
-| Auth pelanggan | **Guest checkout + opsional akun** | Checkout tetap cepat tanpa hambatan daftar, tapi pelanggan yang mau bisa daftar untuk riwayat order otomatis |
-| Notifikasi status order | **Link WhatsApp manual/semi-otomatis** (`wa.me` pre-filled) | Gratis, tidak perlu verifikasi Meta Business, cukup untuk volume order awal — upgrade ke API resmi kalau volume sudah signifikan |
+| Auth pelanggan | **Guest checkout + opsional akun**, plus multi-alamat (#11) untuk yang punya akun | Checkout tetap cepat tanpa hambatan daftar, tapi pelanggan yang mau bisa daftar untuk riwayat order & alamat tersimpan |
+| Notifikasi status order | **Link WhatsApp manual/semi-otomatis** (`wa.me` pre-filled) — fitur #15 (auto-notification API resmi) ditunda | Gratis, tidak perlu verifikasi Meta Business, cukup untuk volume order awal |
+| Penjadwalan (#3) | Cutoff **H-1 jam 20.00 WIB** (default, admin-configurable), tanpa batas kapasitas harian | Cukup untuk mulai; kapasitas harian bisa ditambah nanti kalau memang jadi masalah nyata, bukan diasumsikan di awal |
+| Pengiriman & ongkir (#13) | Antar sendiri dengan ongkir berbasis jarak — **implementasi: Haversine + Geolocation browser**, bukan Google Maps API (keputusan diambil saat implementasi, 21 Juli 2026) | Areska Kitchen memang mengantar ke pelanggan; jarak garis lurus + geolocation gratis bawaan browser cukup akurat untuk skala kota dan tidak butuh API key berbayar/billing account Google Cloud — Google Maps Distance Matrix tetap bisa jadi upgrade nanti kalau perlu akurasi jarak jalan |
+| Review produk (#12) | **Ditunda**, tidak masuk Fase 2 | Fokus ke order flow inti dulu; ditambah setelah ada transaksi nyata untuk direview |
+| Voucher/promo (#10) | Masuk rencana, setelah Payment (Phase 7) | Improvement, bukan blocking checkout dasar |
+| Analitik (#14) | Statistik penjualan sederhana di Fase 2; laporan laba/rugi lengkap tetap Fase 3 | Menghindari duplikasi dengan Dashboard Keuangan yang sudah direncanakan terpisah |
 
 ## Checklist Input Klien Sebelum/Selama Fase 2
 
 - [ ] Dokumen legal bisnis (NIB/NPWP) — kesiapan untuk verifikasi akun bisnis Midtrans
+- [ ] **Kunci Midtrans sandbox** (`MIDTRANS_SERVER_KEY`/`MIDTRANS_CLIENT_KEY` di `web/.env`) — daftar gratis di dashboard.sandbox.midtrans.com (tidak butuh NIB/NPWP untuk sandbox), wajib diisi sebelum alur pembayaran bisa dites end-to-end
+- [ ] Titik lokasi dapur/toko asli (koordinat lat/lng — sekarang masih default estimasi pusat kota Pangkalpinang), radius area layanan final, tarif ongkir/km final — diedit sendiri dari `/admin/settings`, tidak perlu minta tolong developer tiap kali berubah
+- [ ] Konfirmasi jam cutoff pemesanan H-1 20.00 WIB — apakah sudah pas atau perlu disesuaikan (diedit dari `/admin/settings`, sudah admin-configurable)
 - [ ] (Carry-over dari Fase 1, masih relevan) Nomor WA Business asli, menu & harga final, foto produk asli, testimoni asli, izin nama/logo instansi, keputusan domain
 
 ---
@@ -297,7 +334,24 @@ Diverifikasi lewat Chrome browser automation: navbar hover/active underline bena
 
 **Keputusan user:** seluruh kode Fase 1 + Fase 2 diselesaikan dulu sebelum ada deployment production apapun — dicatat di header dokumen ini.
 
-**Titik mulai sesi berikutnya:** Fase 2 Phase 1 (setup PostgreSQL + migrasi schema) — tapi ada beberapa **(butuh keputusan)** yang sebaiknya dikonfirmasi dulu bareng user sebelum mulai koding (lihat "Checklist Keputusan & Input Klien" di atas), khususnya soal hosting Postgres karena itu menentukan setup dev environment dari awal.
+**Lanjutan sesi yang sama — eksekusi Phase 1-3:** Setelah keputusan arsitektur dikonfirmasi (Neon + Docker lokal, guest+opsional akun, WA manual), Phase 1 (PostgreSQL + schema diperluas + seed), Phase 2 (autentikasi admin, NextAuth v4 JWT), dan Phase 3 (dashboard admin CRUD Produk/Testimoni/Dipercaya Oleh + list Order) diselesaikan dan di-push. Dua bug nyata ditemukan & diperbaiki lewat testing browser: (1) matcher middleware yang tidak melindungi path `/admin` polos, (2) scroll wheel di atas input harga yang sedang fokus mengubah nilainya tanpa sengaja.
+
+**Rekonsiliasi dengan `taskplan-eco-rec.md`:** User punya dokumen rencana e-commerce sendiri (`taskplan-eco-rec.md`, ditulis manual bukan oleh Claude) sebagai referensi supaya fitur yang dibangun tepat sasaran. Fitur bernomor #3 (Scheduling, ditandai CRITICAL), #10 (Voucher/Promo), #11 (Multi-alamat), #12 (Review Produk), #13 (Ongkir & Maps), #14 (Analitik), #15 (WA Auto-Notification) didiskusikan satu-satu dan direkonsiliasi ke breakdown Fase 2 di atas (Phase 5-11 baru/diperluas) — detail keputusan tiap fitur ada di tabel "Keputusan Arsitektur Fase 2". Setelah disepakati, `taskplan-eco-rec.md` dihapus (isinya sudah sepenuhnya terserap ke sini).
+
+**Perubahan cara kerja (instruksi user, berlaku ke depan):**
+- Commit & push **tidak lagi per-Phase/per-section** — selesaikan dulu satu batch pekerjaan penuh, baru commit+push sekali di akhir.
+- Verifikasi fitur di browser **dilakukan oleh user sendiri**, bukan lewat automation tool sesi ini — lebih cepat, dan feedback datang langsung dari pengguna nyata alih-alih automation yang beberapa kali kena kendala teknis (viewport berbeda antar-tab, dialog native yang nge-block, state HMR yang tidak stabil).
+
+**Lanjutan sesi yang sama — eksekusi Phase 4-11 (satu batch penuh, sesuai instruksi baru):** Seluruh sisa Fase 2 (kecuali Testing manual & Deployment) diselesaikan dalam satu rangkaian tanpa commit/push di tengah jalan. Ringkasan per Phase ada di checklist masing-masing di atas; poin-poin penting:
+
+- **Katalog & data**: `Menu`/`Testimonials`/`TrustedBy` dipecah jadi Server Component (fetch DB) + Client Component (interaktivitas) — pola ini dipakai konsisten di semua tempat yang butuh keduanya. Ketemu & perbaiki bug laten `next.config.mjs` (gambar eksternal dari admin bakal ditolak `next/image` tanpa `remotePatterns`).
+- **Ongkir/Maps (#13)**: diimplementasi pakai Haversine + Geolocation browser (gratis, tanpa API key), bukan Google Maps Platform seperti draft awal — keputusan diambil saat implementasi karena Maps API butuh billing account Google Cloud, sementara kebutuhan sebenarnya (jarak + validasi area) bisa dipenuhi tanpa itu. Google Maps tetap terbuka sebagai upgrade nanti.
+- **AppSetting baru**: model single-row untuk cutoff time, lokasi dapur, radius/tarif ongkir, dan toggle darurat checkout retail — semua bisa diedit dari `/admin/settings` tanpa deploy ulang, sesuai prinsip "admin-configurable, bukan hardcode" yang ditekankan user untuk fitur #3.
+- **Auth diperluas ke pelanggan**: `middleware.ts` ditulis ulang total dari `withAuth` (next-auth bawaan) jadi middleware manual, karena perlu dua halaman login berbeda (`/admin/login` vs `/account/login`) yang tidak didukung `withAuth`.
+- **Midtrans**: kode integrasi (Snap transaction, webhook dengan verifikasi signature) selesai dan siap, tapi belum bisa dites end-to-end karena `MIDTRANS_SERVER_KEY`/`MIDTRANS_CLIENT_KEY` di `.env` masih kosong — perlu akun sandbox dari user (gratis, tidak butuh NIB/NPWP untuk sandbox).
+- **Verifikasi**: `tsc`/`lint` bersih di setiap tahap, plus smoke test dasar (server boot, kode HTTP route inti, konten DB tampil di homepage) — **klik-per-klik penuh sengaja tidak dilakukan**, sesuai instruksi baru user bahwa verifikasi fitur di browser jadi tanggung jawab user sendiri mulai sesi ini.
+
+**Titik mulai sesi berikutnya:** Menunggu feedback user dari testing manual. Item yang masih butuh input klien sebelum bisa go-live: kunci Midtrans sandbox, koordinat lokasi dapur + radius + tarif ongkir asli (sekarang default estimasi), NIB/NPWP untuk Midtrans production, dan checklist lama dari Fase 1 (nomor WA asli, menu & harga final, dst.). Deployment (Phase 13) tetap menunggu sampai semua ini clear, sesuai arahan user di awal Fase 2.
 
 ---
 

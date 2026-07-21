@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { LayoutDashboard, Package, Quote, Building2, ShoppingBag } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Quote,
+  Building2,
+  ShoppingBag,
+  Ticket,
+  Settings,
+} from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { LogoutButton } from "@/components/admin/LogoutButton";
 
@@ -10,6 +18,8 @@ const NAV_ITEMS = [
   { label: "Testimoni", href: "/admin/testimonials", icon: Quote },
   { label: "Dipercaya Oleh", href: "/admin/trusted-by", icon: Building2 },
   { label: "Order", href: "/admin/orders", icon: ShoppingBag },
+  { label: "Voucher", href: "/admin/vouchers", icon: Ticket },
+  { label: "Pengaturan", href: "/admin/settings", icon: Settings },
 ];
 
 export default async function AdminDashboardLayout({

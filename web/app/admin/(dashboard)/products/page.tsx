@@ -3,13 +3,7 @@ import { Plus, Pencil } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { deleteProduct } from "@/lib/actions/products";
 import { DeleteButton } from "@/components/admin/DeleteButton";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  NASI_KOTAK: "Nasi Kotak",
-  PRASMANAN: "Prasmanan",
-  SNACK_BOX: "Snack Box",
-  PEMPEK_LAINNYA: "Pempek & Lainnya",
-};
+import { CATEGORY_LABELS } from "@/lib/product-categories";
 
 export default async function ProductsAdminPage() {
   const products = await prisma.product.findMany({ orderBy: [{ category: "asc" }, { name: "asc" }] });

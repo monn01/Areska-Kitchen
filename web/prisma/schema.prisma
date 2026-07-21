@@ -72,9 +72,20 @@ model Order {
   customerPhone   String
   /// Alamat/lokasi pengiriman acara — penting untuk katering, bukan sekadar retail shipping.
   deliveryAddress String?
+  deliveryLat     Float?
+  deliveryLng     Float?
+  /// Ongkir hasil hitung jarak (Phase 6) — disimpan terpisah dari totalAmount supaya rincian
+  /// tetap terlihat jelas di detail order admin.
+  deliveryFee     Int         @default(0)
   /// Tanggal acara/pengiriman diminta pelanggan (beda dari createdAt = kapan order dibuat).
   eventDate       DateTime?
+  /// Jam pengantaran diminta, format "HH:mm" (WIB), dalam rentang jam operasional.
+  deliveryTime    String?
   notes           String?
+  discountAmount  Int         @default(0)
+  voucher         Voucher?    @relation(fields: [voucherId], references: [id])
+  voucherId       String?
+  /// subtotal item + deliveryFee - discountAmount
   totalAmount     Int
   status          OrderStatus @default(PENDING)
   isCustomEvent   Boolean     @default(false) // prasmanan/event besar, butuh konfirmasi manual (PRD §7)
@@ -128,7 +139,71 @@ model User {
   isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
 
+  orders    Order[]
+  addresses Address[]
+}
+
+/// Alamat tersimpan milik pelanggan yang punya akun (fitur #11 — multi-alamat). Guest checkout
+/// tidak menyentuh model ini, tetap isi alamat manual per order seperti biasa.
+model Address {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  label     String // "Rumah", "Kantor", dst — bebas diisi pelanggan
+  address   String
+  latitude  Float?
+  longitude Float?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+/// Voucher/kode promo (fitur #10) — sengaja dikerjakan setelah Payment (Phase 7) selesai,
+/// bukan blocking checkout dasar.
+model Voucher {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  discountType  DiscountType
+  discountValue Int
+  minOrder      Int?
+  validFrom     DateTime?
+  validUntil    DateTime?
+  usageLimit    Int?
+  usageCount    Int          @default(0)
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+
   orders Order[]
+}
+
+/// Setting aplikasi — single-row (selalu di-query lewat findFirst, di-upsert lewat admin
+/// settings page). Dibuat sebagai kolom bertipe eksplisit (bukan key-value generik) karena
+/// jumlah setting-nya kecil dan tetap — lebih type-safe untuk dipakai di banyak tempat
+/// (checkout, cutoff validation, kalkulasi ongkir).
+model AppSetting {
+  id String @id @default(cuid())
+
+  /// Format "HH:mm" (WIB) — order untuk H+1 harus masuk sebelum jam ini (fitur #3, CRITICAL).
+  orderCutoffTime String @default("20:00")
+
+  /// Titik lokasi dapur/toko untuk hitung jarak ongkir (fitur #13) — default estimasi pusat
+  /// kota Pangkalpinang, BUTUH INPUT KLIEN: koordinat asli dapur/toko.
+  kitchenLat Float @default(-2.1316)
+  kitchenLng Float @default(106.1169)
+
+  /// Radius area layanan (km) dan tarif ongkir per km — BUTUH INPUT KLIEN untuk angka final.
+  deliveryRadiusKm Float @default(15)
+  deliveryFeePerKm Int   @default(3000)
+
+  /// Toggle darurat — nonaktifkan sementara checkout retail dari dashboard admin kalau dapur
+  /// kewalahan, tanpa perlu deploy ulang (pengganti batas kapasitas harian yang belum dibangun).
+  retailCheckoutEnabled Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
 }
 
 // --- Fase 3 (Dashboard Admin / Keuangan) ---

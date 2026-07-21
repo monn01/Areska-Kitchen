@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import Link from "next/link";
+import { Menu, X, User } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { CartButton } from "@/components/cart/CartButton";
 import { buildWhatsAppLink, DEFAULT_WA_MESSAGE, cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -162,6 +164,16 @@ export function Navbar() {
               );
             })}
           </nav>
+
+          <Link
+            href="/account"
+            aria-label="Akun saya"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-green-700 hover:bg-green-50"
+          >
+            <User className="h-5 w-5" strokeWidth={1.5} />
+          </Link>
+
+          <CartButton />
 
           <div className="hidden lg:block">
             <Button

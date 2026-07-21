@@ -3,23 +3,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import type { OrderStatus } from "@prisma/client";
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  PENDING: "Menunggu",
-  CONFIRMED: "Dikonfirmasi",
-  PROCESSING: "Diproses",
-  COMPLETED: "Selesai",
-  CANCELLED: "Dibatalkan",
-};
-
-const STATUS_STYLES: Record<OrderStatus, string> = {
-  PENDING: "bg-orange-100 text-orange-700",
-  CONFIRMED: "bg-green-50 text-green-600",
-  PROCESSING: "bg-green-50 text-green-600",
-  COMPLETED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-slate-100 text-slate-500",
-};
+import { STATUS_LABELS, STATUS_STYLES } from "@/lib/order-status";
+import { OrderStatusControls } from "@/components/admin/OrderStatusControls";
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
   const order = await prisma.order.findUnique({
@@ -70,6 +55,22 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                 <dt className="text-green-700/60">Tanggal Acara</dt>
                 <dd className="text-green-700">
                   {new Intl.DateTimeFormat("id-ID", { dateStyle: "full" }).format(order.eventDate)}
+                  {order.deliveryTime && ` · ${order.deliveryTime} WIB`}
+                </dd>
+              </div>
+            )}
+            {order.deliveryLat != null && order.deliveryLng != null && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-green-700/60">Titik Lokasi</dt>
+                <dd className="text-right text-green-700">
+                  <a
+                    href={`https://www.google.com/maps?q=${order.deliveryLat},${order.deliveryLng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    Lihat di Maps
+                  </a>
                 </dd>
               </div>
             )}
@@ -113,33 +114,51 @@ export default async function OrderDetailPage({ params }: { params: { id: string
             </dl>
           ) : (
             <p className="mt-3 text-sm text-green-700/60">
-              Belum ada transaksi — integrasi Midtrans menyusul di Fase 2 Phase 6.
+              Belum ada transaksi pembayaran untuk order ini.
             </p>
           )}
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl bg-cream-50 p-6 shadow-[0_2px_12px_rgba(31,77,58,0.08)]">
-        <h2 className="font-semibold text-green-700">Item Pesanan</h2>
-        <div className="mt-3 divide-y divide-green-50">
-          {order.items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between py-3 text-sm">
-              <div>
-                <p className="font-medium text-green-700">{item.product.name}</p>
-                <p className="text-green-700/60">
-                  {item.quantity} x Rp {item.priceEach.toLocaleString("id-ID")}
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl bg-cream-50 p-6 shadow-[0_2px_12px_rgba(31,77,58,0.08)]">
+          <h2 className="font-semibold text-green-700">Item Pesanan</h2>
+          <div className="mt-3 divide-y divide-green-50">
+            {order.items.map((item) => (
+              <div key={item.id} className="flex items-center justify-between py-3 text-sm">
+                <div>
+                  <p className="font-medium text-green-700">{item.product.name}</p>
+                  <p className="text-green-700/60">
+                    {item.quantity} x Rp {item.priceEach.toLocaleString("id-ID")}
+                  </p>
+                </div>
+                <p className="font-medium text-green-700">
+                  Rp {(item.quantity * item.priceEach).toLocaleString("id-ID")}
                 </p>
               </div>
-              <p className="font-medium text-green-700">
-                Rp {(item.quantity * item.priceEach).toLocaleString("id-ID")}
-              </p>
+            ))}
+          </div>
+          <div className="mt-3 space-y-1 border-t border-green-100 pt-3 text-sm">
+            {order.deliveryFee > 0 && (
+              <div className="flex justify-between text-green-700/70">
+                <span>Ongkir</span>
+                <span>Rp {order.deliveryFee.toLocaleString("id-ID")}</span>
+              </div>
+            )}
+            {order.discountAmount > 0 && (
+              <div className="flex justify-between text-green-700/70">
+                <span>Diskon</span>
+                <span>-Rp {order.discountAmount.toLocaleString("id-ID")}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-semibold text-green-700">
+              <span>Total</span>
+              <span>Rp {order.totalAmount.toLocaleString("id-ID")}</span>
             </div>
-          ))}
+          </div>
         </div>
-        <div className="mt-3 flex justify-between border-t border-green-100 pt-3 text-sm font-semibold text-green-700">
-          <span>Total</span>
-          <span>Rp {order.totalAmount.toLocaleString("id-ID")}</span>
-        </div>
+
+        <OrderStatusControls order={order} />
       </div>
     </div>
   );

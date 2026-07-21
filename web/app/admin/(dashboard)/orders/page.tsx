@@ -1,23 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
+import { STATUS_LABELS, STATUS_STYLES } from "@/lib/order-status";
 import type { OrderStatus } from "@prisma/client";
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  PENDING: "Menunggu",
-  CONFIRMED: "Dikonfirmasi",
-  PROCESSING: "Diproses",
-  COMPLETED: "Selesai",
-  CANCELLED: "Dibatalkan",
-};
-
-const STATUS_STYLES: Record<OrderStatus, string> = {
-  PENDING: "bg-orange-100 text-orange-700",
-  CONFIRMED: "bg-green-50 text-green-600",
-  PROCESSING: "bg-green-50 text-green-600",
-  COMPLETED: "bg-green-100 text-green-700",
-  CANCELLED: "bg-slate-100 text-slate-500",
-};
 
 const FILTERS: { value: OrderStatus | "ALL"; label: string }[] = [
   { value: "ALL", label: "Semua" },
@@ -108,7 +93,7 @@ export default async function OrdersAdminPage({
             {orders.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-5 py-8 text-center text-green-700/60">
-                  Belum ada order masuk. Sistem checkout menyusul di Fase 2 Phase 5.
+                  Belum ada order masuk.
                 </td>
               </tr>
             )}

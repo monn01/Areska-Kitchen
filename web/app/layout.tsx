@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { LOCAL_BUSINESS, SITE_NAME, SITE_URL } from "@/lib/site-config";
+import { CartProvider } from "@/lib/cart-context";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -84,7 +85,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${fraunces.variable} ${inter.variable}`}>
       <body className="font-sans bg-cream-100 text-green-700 antialiased">
-        {children}
+        <CartProvider>{children}</CartProvider>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}

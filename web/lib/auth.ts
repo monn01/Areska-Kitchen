@@ -66,3 +66,12 @@ export async function requireAdmin() {
   }
   return session;
 }
+
+/** Sama seperti requireAdmin, tapi untuk action milik akun pelanggan (guest checkout tidak lewat sini). */
+export async function requireUser() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+  return session;
+}

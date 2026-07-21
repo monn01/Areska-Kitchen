@@ -3,14 +3,13 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { createProduct, updateProduct, type ProductFormState } from "@/lib/actions/products";
+import { CATEGORY_ORDER, CATEGORY_LABELS } from "@/lib/product-categories";
 import type { Product } from "@prisma/client";
 
-const CATEGORIES: { value: Product["category"]; label: string }[] = [
-  { value: "NASI_KOTAK", label: "Nasi Kotak" },
-  { value: "PRASMANAN", label: "Prasmanan" },
-  { value: "SNACK_BOX", label: "Snack Box" },
-  { value: "PEMPEK_LAINNYA", label: "Pempek & Lainnya" },
-];
+const CATEGORIES: { value: Product["category"]; label: string }[] = CATEGORY_ORDER.map((value) => ({
+  value,
+  label: CATEGORY_LABELS[value],
+}));
 
 const inputClass =
   "w-full rounded-xl border border-green-200 bg-cream-50 px-4 py-2.5 text-green-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-orange-300";

@@ -117,7 +117,7 @@ async function main() {
   await prisma.product.createMany({ data: products });
   await prisma.testimonial.createMany({ data: testimonials });
   await prisma.client.createMany({
-    data: trustedClients.map((c) => ({ ...c, isVisible: false })),
+    data: trustedClients.map((c) => ({ ...c, isVisible: true })),
   });
 
   // Akun admin dev — HANYA untuk lokal, ganti password sebelum production.
@@ -135,6 +135,14 @@ async function main() {
       isAdmin: true,
     },
   });
+
+  // Setting aplikasi — singleton row, dibuat sekali kalau belum ada. Nilai default
+  // (lokasi dapur, tarif ongkir, cutoff time) masih perkiraan, BUTUH DIKONFIRMASI
+  // klien lalu diubah dari dashboard admin — lihat TASKPLAN.md checklist input klien.
+  const existingSetting = await prisma.appSetting.findFirst();
+  if (!existingSetting) {
+    await prisma.appSetting.create({ data: {} });
+  }
 
   console.log(`Seed selesai: ${products.length} produk, ${testimonials.length} testimoni, ${trustedClients.length} client.`);
   console.log(`Akun admin dev — email: ${adminEmail} / password: ${adminPassword} (GANTI sebelum production)`);
