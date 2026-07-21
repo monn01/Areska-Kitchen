@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MinimalHeader } from "@/components/ui/MinimalHeader";
-import { MenuGrid } from "@/components/sections/MenuGrid";
+import { CatalogGrid } from "@/components/sections/CatalogGrid";
 import { KatalogAuthGate } from "@/components/auth/KatalogAuthGate";
 import { cn } from "@/lib/utils";
 
@@ -26,23 +26,23 @@ export default async function KatalogPage() {
         aria-hidden={!session}
         className={cn(!session && "pointer-events-none select-none blur-sm")}
       >
-        <div className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <div className="mx-auto max-w-container">
-            <div className="text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
-                Katalog Menu
-              </p>
-              <h1 className="mt-3 font-heading text-3xl font-semibold text-green-700 sm:text-4xl">
-                Pilihan Menu untuk Setiap Acara
-              </h1>
-              <p className="mx-auto mt-4 max-w-xl text-green-700/70">
-                Harga di bawah sudah final — tambahkan ke keranjang lalu lanjutkan ke
-                checkout untuk atur jadwal dan alamat pengantaran.
-              </p>
-            </div>
-
-            <MenuGrid products={products} />
+        <div className="border-b border-green-100 bg-cream-50 py-12 sm:py-16">
+          <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
+              Katalog Menu
+            </p>
+            <h1 className="mt-3 font-heading text-4xl font-semibold text-green-700 sm:text-5xl">
+              Pilihan Menu untuk Setiap Acara
+            </h1>
+            <p className="mt-4 max-w-xl text-green-700/70">
+              Harga di bawah sudah final — tambahkan ke keranjang lalu lanjutkan ke
+              checkout untuk atur jadwal dan alamat pengantaran.
+            </p>
           </div>
+        </div>
+
+        <div className="mx-auto max-w-container px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+          <CatalogGrid products={products} />
         </div>
       </div>
 

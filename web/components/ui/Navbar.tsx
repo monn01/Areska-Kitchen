@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Menu, X, MessageCircle, ShoppingBag } from "lucide-react";
+import { Menu, X, ShoppingBag } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { buildWhatsAppLink, DEFAULT_WA_MESSAGE, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { label: "Beranda", href: "#beranda" },
@@ -166,18 +166,7 @@ export function Navbar() {
             })}
           </nav>
 
-          <div className="hidden items-center gap-3 lg:flex">
-            <Button
-              href={buildWhatsAppLink(DEFAULT_WA_MESSAGE)}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="secondary"
-              confirmBeforeNavigate
-              className="gap-1.5 px-5 py-2 text-sm"
-            >
-              <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
-              Chat WhatsApp
-            </Button>
+          <div className="hidden lg:block">
             <Button href="/katalog" variant="primary" className="gap-1.5 px-5 py-2 text-sm">
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
               Pesan Online
@@ -267,7 +256,7 @@ export function Navbar() {
                   );
                 })}
               </nav>
-              <div className="mt-auto space-y-2.5 px-6 py-6">
+              <div className="mt-auto px-6 py-6">
                 <Button
                   href="/katalog"
                   variant="primary"
@@ -276,18 +265,6 @@ export function Navbar() {
                 >
                   <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
                   Pesan Online
-                </Button>
-                <Button
-                  href={buildWhatsAppLink(DEFAULT_WA_MESSAGE)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variant="secondary"
-                  confirmBeforeNavigate
-                  className="w-full gap-1.5"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
-                  Chat WhatsApp
                 </Button>
               </div>
             </motion.div>

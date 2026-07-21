@@ -18,6 +18,7 @@ const productSchema = z.object({
     .optional()
     .or(z.literal("")),
   isActive: z.coerce.boolean(),
+  isPopular: z.coerce.boolean(),
 });
 
 export type ProductFormState = { error?: string };
@@ -32,6 +33,7 @@ export async function createProduct(_prevState: ProductFormState, formData: Form
     price: formData.get("price"),
     imageUrl: formData.get("imageUrl"),
     isActive: formData.get("isActive") === "on",
+    isPopular: formData.get("isPopular") === "on",
   });
 
   if (!parsed.success) {
@@ -43,6 +45,8 @@ export async function createProduct(_prevState: ProductFormState, formData: Form
   });
 
   revalidatePath("/admin/products");
+  revalidatePath("/");
+  revalidatePath("/katalog");
   redirect("/admin/products");
 }
 
@@ -60,6 +64,7 @@ export async function updateProduct(
     price: formData.get("price"),
     imageUrl: formData.get("imageUrl"),
     isActive: formData.get("isActive") === "on",
+    isPopular: formData.get("isPopular") === "on",
   });
 
   if (!parsed.success) {
@@ -72,6 +77,8 @@ export async function updateProduct(
   });
 
   revalidatePath("/admin/products");
+  revalidatePath("/");
+  revalidatePath("/katalog");
   redirect("/admin/products");
 }
 
@@ -79,4 +86,6 @@ export async function deleteProduct(id: string) {
   await requireAdmin();
   await prisma.product.delete({ where: { id } });
   revalidatePath("/admin/products");
+  revalidatePath("/");
+  revalidatePath("/katalog");
 }

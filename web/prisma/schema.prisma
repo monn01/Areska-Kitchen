@@ -28,6 +28,9 @@ model Product {
   price       Int
   imageUrl    String?
   isActive    Boolean         @default(true)
+  /// Ditandai admin untuk tampil di "Paket Populer" (landing page) & badge "Populer" di
+  /// katalog — bukan dihitung otomatis dari penjualan, murni kurasi manual dulu.
+  isPopular   Boolean         @default(false)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 

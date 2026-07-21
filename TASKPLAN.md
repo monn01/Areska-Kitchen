@@ -226,7 +226,26 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 - [x] Diverifikasi: `tsc --noEmit` & `next lint` bersih, migrasi Prisma diterapkan & client di-generate ulang, smoke test status code semua rute baru/tersentuh (200 untuk publik termasuk `/account/forgot-password` & `/account/reset-password` setelah fix middleware, gerbang blur+overlay aktif untuk request tanpa sesi)
 - [ ] **Belum dikerjakan/di luar scope sesi ini**: checkout (`/checkout`) sendiri masih belum hard-require login di level server (`createOrder` tetap terima guest) — gerbang akun baru cuma di titik masuk `/katalog`, jadi secara teknis pengguna yang mem-bypass CSS blur lewat devtools masih bisa lanjut checkout tanpa akun; belum diubah karena user cuma minta gerbang di titik klik "Pesan Online"/link katalog, bukan mencabut guest checkout yang sudah diputuskan sebelumnya — perlu diklarifikasi ke user kalau mau level proteksi lebih ketat
 
-### Phase 14 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
+### Phase 14 — Perbaikan Lanjutan: Bug Wrapper Button, UI Password, Akun Demo ✅ selesai 21 Juli 2026
+- [x] **Bug lanjutan ukuran tombol**: setelah fix `tailwind-merge` di Phase 13 ternyata masih ada laporan "Pesan Online" lebih kecil dari "Chat WhatsApp" di drawer mobile/`StickyMobileCta` walau classNamenya sama persis. Akar masalah kedua ditemukan: `Button.tsx` untuk link internal (href bukan `http`) membungkus `<Link>` dalam `<motion.span className="inline-block">` — wrapper tanpa lebar eksplisit ini shrink-to-fit, jadi class `w-full`/`flex-1` yang nempel di `<Link>` di dalamnya tidak pernah benar-benar melebar ikut parent. Cabang link eksternal (WA) tidak punya wrapper ini sama sekali, makanya cuma tombol ke link internal yang kena. Fix: `motion.create(Link)` langsung (framer-motion v12), tanpa span pembungkus — otomatis membetulkan semua tempat yang pakai pola `w-full`/`flex-1` pada Button berlink internal
+- [x] Ukuran tombol Navbar & Hero disamakan lalu diperbesar bertahap sesuai revisi user (`px-7 py-3 text-base` di Hero pada akhirnya, Navbar tetap `px-5 py-2 text-sm`)
+- [x] Item nav "Menu" (Navbar & Footer) dikembalikan dari `/katalog` ke `#menu` (scroll ke section, bukan navigasi halaman) — keputusan Phase 12 ternyata bikin bingung karena tombol "Pesan Online" sudah cukup untuk ke `/katalog`
+- [x] UI password: link "Lupa password?" dipindah ke bawah kolom password (sebelumnya sejajar dengan label di atas), toggle tampil/sembunyi password (ikon mata, `components/auth/AuthForms.tsx` — `PasswordInput`, dipakai ulang di halaman reset password) ditambahkan ke semua field password
+- [x] Akun demo pelanggan dibuat untuk kebutuhan testing user sendiri: `demo@areskakitchen.local` / `Demo1234`
+
+### Phase 15 — Rombak Visual: Hero, "Paket Populer", dan Katalog Berbasis Referensi Desain ✅ selesai 21 Juli 2026
+User eksplisit menyebut UI katalog "paling jelek yang pernah dilihat" dan memberi 3 referensi: `gambar-ref/Mockup.png` (render brand + preview Hero), `gambar-ref/tampilan menu dan cara pemesanan.png` (layout "Paket Populer" + "Cara Pemesanan"), dan link Figma pribadi (`figma.com/design/Ep3OLFNjdGrAcSqPBqU6Vu`) untuk halaman e-commerce setelah login. Referensi Figma diakses lewat Figma MCP (`get_metadata`/`get_screenshot`) — filenya berisi 5 frame halaman: "Daftar Menu" (dipakai sebagai acuan utama `/katalog`), "Detail Menu", "Checkout" (dipakai sebagai acuan ringan restyle checkout), plus 2 frame landing style lain (tidak dipakai). Palet warna Figma (krem/maroon) **diadaptasi ke palet brand asli** (hijau/oranye/krem) — bukan ditiru literal, supaya konsisten dengan identitas Areska Kitchen yang sudah ada.
+- [x] `components/sections/Hero.tsx` — foto produk tidak lagi dalam kartu/border/shadow; dipakai CSS `mask-image` (radial-gradient fade) supaya pinggiran foto memudar menyatu ke background cream section, sesuai `Mockup.png` (foto "mengambang", bukan di dalam kotak)
+- [x] `components/ui/Navbar.tsx` — tombol "Chat WhatsApp" dihapus total dari navbar (desktop & mobile drawer), tersisa cuma "Pesan Online" sendirian, sesuai permintaan eksplisit
+- [x] **Field baru** `Product.isPopular` (Prisma, migrasi `20260721090000_product_is_popular`) — ditandai admin manual (checkbox baru di `ProductForm.tsx`) untuk kurasi "Paket Populer"/badge "Populer", bukan dihitung otomatis dari penjualan
+- [x] `components/sections/MenuCta.tsx` dirombak total jadi layout bento asimetris ("Paket Populer": 1 kartu besar "Best Seller" + 2 kartu produk + 1 kartu CTA "Custom Menu Anda Sendiri" ke WhatsApp) + section baru "Cara Pemesanan" (3 langkah: Pilih Menu → Atur Jadwal → Pengantaran, dengan garis penghubung antar ikon) — konten 3 langkah ini jujur mencerminkan alur order asli (bukan teks generik), sesuai referensi `tampilan menu dan cara pemesanan.png`
+- [x] `/katalog` dirombak total mengikuti frame Figma "Daftar Menu": sidebar filter kategori (checkbox, kategori asli) + area utama dengan "Menampilkan X dari Y menu" + dropdown urutkan (Populer/Harga Terendah/Harga Tertinggi/Nama A-Z, client-side) + grid kartu produk (badge "Populer", gambar, kategori, nama, deskripsi terpotong, harga, tombol bulat "+" tambah-keranjang) — `components/sections/CatalogGrid.tsx` (baru), menggantikan `MenuGrid.tsx` (dihapus, sudah tidak dipakai)
+  - Sengaja **tidak** meniru filter "Occasion"/badge beragam (Top Seller/New/Seasonal/dst.) dari Figma karena tidak ada data asli di belakangnya — dihindari supaya tidak ada UI palsu/tidak fungsional; harga/kategori/badge Populer semua berbasis data sungguhan
+  - Sengaja **tidak** membangun pagination (Figma contoh 48 item) — katalog asli cuma ~9 produk, semua muat dalam satu grid tanpa perlu "load more"/nomor halaman
+- [x] `app/checkout/page.tsx` — sentuhan ringan mengikuti gaya baru: link "← Kembali ke Katalog" ditambahkan, heading diperbesar; logika `CheckoutForm.tsx` tidak diubah (sudah cukup dekat dengan struktur referensi Figma: daftar item + form jadwal/alamat + ringkasan pesanan)
+- [x] Diverifikasi via browser (bukan cuma curl): mask foto Hero, layout bento "Paket Populer", section "Cara Pemesanan", gerbang login blur di `/katalog` (masih berfungsi normal), login pakai akun demo → filter kategori & badge Populer tampil benar, tambah ke keranjang → badge count di header update → drawer keranjang solid & berfungsi → checkout menampilkan item & ringkasan dengan benar. `tsc --noEmit`/`next lint` bersih di setiap langkah.
+
+### Phase 16 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
 - [x] `tsc --noEmit` dan `next lint` bersih di setiap tahap (Phase 4-11)
 - [x] Smoke test dasar: server boot bersih tanpa error, route inti (`/`, `/checkout`, `/admin`, `/account`, `/admin/login`, `/account/login`, `/account/register`) merespons kode HTTP yang benar (200 untuk publik, 307 redirect untuk yang terproteksi tanpa sesi), konten dari database (produk/testimoni/dipercaya-oleh) terverifikasi tampil di homepage
 - [ ] **(instruksi user, berlaku mulai sesi ini)**: verifikasi fitur secara penuh di browser (klik-per-klik alur order, admin CRUD, dst.) dilakukan oleh user sendiri, bukan lewat automation tool — lebih cepat, dan feedback datang langsung dari pengguna nyata alih-alih tool otomasi yang beberapa kali kena kendala teknis di sesi-sesi sebelumnya
@@ -235,7 +254,7 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 - [ ] Security review: verifikasi signature webhook (sudah diimplementasi, perlu dites dengan transaksi sandbox asli), proteksi route admin/account, tidak ada data kartu tersimpan sendiri (PCI-DSS via Midtrans)
 - [ ] Test responsive mobile untuk seluruh flow baru (checkout, keranjang, admin)
 
-### Phase 15 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
+### Phase 17 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
 - [ ] Hosting final: **Vercel (app) + Neon (Postgres)** — konsisten dengan keputusan Phase 1
 - [ ] Setup domain (masih pending dari Fase 1 — `.id`/`.co.id`/`.com`)
 - [ ] Migrasi Midtrans dari sandbox ke production keys
@@ -407,6 +426,21 @@ Lanjutan sesi arsitektur sebelumnya, revisi singkat dari user:
 6. **Bug ditemukan & diperbaiki saat smoke test**: `middleware.ts` matcher `/account/((?!login|register).*)` belum kecualikan `forgot-password`/`reset-password` — dua halaman publik baru itu ikut ke-redirect ke login sebelum di-fix.
 
 Migrasi Prisma baru (`User.phone` jadi `@unique`, model `PasswordResetToken`) diterapkan ke DB lokal (lewat `migrate diff` + `migrate deploy` manual karena `migrate dev` gagal jalan non-interaktif di shell ini — bukan masalah data, cuma keterbatasan terminal). `tsc`/`lint` bersih, smoke test status code semua rute baru benar. Sesuai instruksi user, verifikasi klik-per-klik alur login/Google/reset-password di browser diserahkan ke user sendiri.
+
+### 21 Juli 2026 — Sesi 6 (Bug wrapper Button, UI password, akun demo, rombak visual Hero/Menu/Katalog dari referensi)
+
+Sesi ini dua bagian:
+
+**Bagian A — revisi cepat menyusul Sesi 5**: laporan user "ukuran button masih beda" ternyata bug KEDUA di luar fix `tailwind-merge` sebelumnya — `Button.tsx` membungkus `<Link>` (untuk href internal) dalam `<motion.span className="inline-block">` yang shrink-to-fit, jadi class lebar (`w-full`/`flex-1`) tidak pernah benar-benar aktif untuk tombol berlink internal. Diperbaiki dengan `motion.create(Link)` langsung, tanpa wrapper. Ukuran tombol Navbar/Hero disamakan lalu diperbesar 2x sesuai revisi berturut-turut. Item nav "Menu" dikembalikan ke `#menu` (bukan `/katalog`). UI password diperbaiki (link lupa password pindah ke bawah, toggle mata ditambah). Akun demo pelanggan dibuat untuk testing user.
+
+**Bagian B — rombak visual besar**: user bilang UI katalog "paling jelek yang pernah dilihat", kasih 3 referensi (`gambar-ref/Mockup.png`, `gambar-ref/tampilan menu dan cara pemesanan.png`, dan link Figma pribadi). Figma diakses via Figma MCP — filenya ternyata berisi desain lengkap 5 halaman e-commerce (Daftar Menu, Detail Menu, Checkout, + 2 halaman landing-style lain), dipakai sebagai acuan struktur/layout (bukan warna — palet Figma krem/maroon diadaptasi ke hijau/oranye/krem brand asli):
+- Hero: foto produk keluar dari kartu, di-mask (radial fade) supaya menyatu ke background, sesuai mockup
+- Navbar: "Chat WhatsApp" dihapus total, tersisa "Pesan Online" saja
+- Section Menu landing diganti total: bento "Paket Populer" (field baru `Product.isPopular` untuk kurasi manual) + "Cara Pemesanan" 3 langkah
+- `/katalog` dirombak total: sidebar filter kategori + sort + grid kartu badge "Populer" — direplikasi dari frame Figma "Daftar Menu", TAPI sengaja tidak meniru elemen yang tidak ada data aslinya (filter occasion, badge beragam, pagination 48-item) supaya tidak ada UI palsu
+- Checkout dapat sentuhan ringan (link kembali, heading lebih besar) tanpa ubah logika
+
+Diverifikasi lewat browser (bukan cuma curl) karena perubahan visualnya besar: mask Hero, bento Paket Populer, Cara Pemesanan, gerbang login blur di katalog (masih jalan normal), login akun demo → filter & badge tampil benar → tambah keranjang → badge count update → drawer solid → checkout tampil benar. `tsc`/`lint` bersih di semua langkah. Migrasi Prisma baru (`isPopular`) diterapkan sama seperti pola Sesi 5 (`migrate diff` + `migrate deploy` manual, `migrate dev` tidak jalan non-interaktif di shell ini).
 
 ---
 

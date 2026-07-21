@@ -39,15 +39,22 @@ export default async function ProductsAdminPage() {
                 <td className="px-5 py-3 text-green-700/70">{CATEGORY_LABELS[p.category]}</td>
                 <td className="px-5 py-3 text-green-700/70">Rp {p.price.toLocaleString("id-ID")}</td>
                 <td className="px-5 py-3">
-                  <span
-                    className={
-                      p.isActive
-                        ? "rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-600"
-                        : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500"
-                    }
-                  >
-                    {p.isActive ? "Aktif" : "Nonaktif"}
-                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span
+                      className={
+                        p.isActive
+                          ? "rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-600"
+                          : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500"
+                      }
+                    >
+                      {p.isActive ? "Aktif" : "Nonaktif"}
+                    </span>
+                    {p.isPopular && (
+                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-600">
+                        Populer
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex items-center justify-end gap-4">

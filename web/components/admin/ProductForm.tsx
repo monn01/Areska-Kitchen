@@ -114,6 +114,16 @@ export function ProductForm({ product }: { product?: Product }) {
         Tampilkan di menu publik
       </label>
 
+      <label className="flex items-center gap-2 text-sm font-medium text-green-700">
+        <input
+          type="checkbox"
+          name="isPopular"
+          defaultChecked={product?.isPopular ?? false}
+          className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-orange-300"
+        />
+        Tandai sebagai &ldquo;Paket Populer&rdquo; (tampil di landing page & badge katalog)
+      </label>
+
       {state.error && <p className="text-sm text-[#B3432E]">{state.error}</p>}
 
       <SubmitButton label={product ? "Simpan Perubahan" : "Tambah Produk"} />
