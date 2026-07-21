@@ -129,11 +129,12 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 - [x] Model `Testimonial` & `Client` siap dipakai dinamis (field `row` di `Client` cocok dengan struktur data marquee "Dipercaya Oleh" dari Fase 1 Phase 11)
 - [x] Seed (`prisma/seed.ts`, jalankan via `npx prisma db seed`) — 9 produk, 4 testimoni, 12 client dari `lib/data.ts`, plus 1 akun admin dev (kredensial di-print ke console saat seed jalan, **wajib diganti sebelum production**)
 
-### Phase 2 — Autentikasi
-- [ ] Login admin: credentials sederhana (email+password, 1 akun) — cukup untuk 1 pengguna (orang tua)
-- [ ] Setup NextAuth/Auth.js — session strategy: **JWT** (keputusan diambil saat schema Phase 1 dirancang: tidak butuh tabel adapter `Account`/`Session`/`VerificationToken` di Prisma karena hanya pakai Credentials provider, tidak ada OAuth; cukup untuk skala 1 admin + akun pelanggan opsional, lebih simpel dari database session tanpa mengorbankan banyak keamanan di kasus ini)
-- [ ] Middleware proteksi route `/admin/*`
-- [ ] Akun pelanggan (keputusan final 21 Juli 2026: **guest checkout + opsional akun**) — checkout tanpa daftar tetap bisa (retail: nasi kotak/snack box), tapi pelanggan juga bisa daftar akun untuk riwayat order otomatis tersimpan
+### Phase 2 — Autentikasi ✅ login admin selesai 21 Juli 2026 (akun pelanggan menyusul di Phase 8)
+- [x] Login admin: credentials sederhana (email+password, 1 akun, `next-auth@4` — stabil, bukan v5 yang masih beta setelah 32 rilis beta) — `app/admin/login/page.tsx`
+- [x] Setup NextAuth — session strategy **JWT** (tidak butuh tabel adapter `Account`/`Session`/`VerificationToken` karena cuma Credentials provider, tidak ada OAuth) — `lib/auth.ts`, `app/api/auth/[...nextauth]/route.ts`
+- [x] Middleware proteksi route `/admin/*` (`middleware.ts`) — **bug ditemukan & diperbaiki saat testing**: matcher regex awal `/admin/((?!login).*)` cuma cocok untuk path dengan segmen tambahan setelah `/admin/`, path `/admin` polos (tanpa trailing apa pun) lolos tanpa proteksi sama sekali. Fix: tambah `/admin` eksplisit ke matcher array. Diverifikasi ulang: akses langsung ke `/admin` tanpa login sekarang benar-benar redirect ke `/admin/login`
+- [x] Dashboard admin placeholder (`app/admin/page.tsx`) + tombol logout, keduanya diverifikasi end-to-end via browser (login sukses → dashboard, login gagal → pesan error, logout → balik ke login, akses langsung tanpa sesi → redirect)
+- [ ] Akun pelanggan (keputusan final 21 Juli 2026: **guest checkout + opsional akun**) — checkout tanpa daftar tetap bisa (retail: nasi kotak/snack box), tapi pelanggan juga bisa daftar akun untuk riwayat order otomatis tersimpan — dikerjakan di Phase 8
 
 ### Phase 3 — Dashboard Admin: Manajemen Konten
 - [ ] Layout admin (sidebar/nav terpisah dari landing page, bukan bagian dari navbar publik)
