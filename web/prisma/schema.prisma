@@ -133,14 +133,29 @@ model User {
   id        String   @id @default(cuid())
   name      String
   email     String?  @unique
-  phone     String?
-  /// Hash password (bcrypt) untuk login credentials — admin (wajib) & pelanggan (opsional, Fase 2 Phase 8).
+  /// Nomor WhatsApp dinormalisasi (format 62xxx) — jadi identitas login alternatif selain
+  /// email ("Daftar dengan WhatsApp"), makanya harus unik seperti email.
+  phone     String?  @unique
+  /// Hash password (bcrypt) untuk login credentials — admin (wajib), pelanggan email/WA (wajib),
+  /// null untuk akun yang daftar/masuk lewat Google (tidak ada password untuk dibobol).
   password  String?
   isAdmin   Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  orders    Order[]
-  addresses Address[]
+  orders              Order[]
+  addresses           Address[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+/// Token sekali-pakai untuk alur lupa password (fitur baru: Sesi 5). Dibuat saat user minta
+/// reset, dihapus setelah dipakai atau kedaluwarsa — tidak pernah simpan password baru di sini.
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 /// Alamat tersimpan milik pelanggan yang punya akun (fitur #11 — multi-alamat). Guest checkout

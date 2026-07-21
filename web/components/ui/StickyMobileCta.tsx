@@ -44,12 +44,12 @@ export function StickyMobileCta() {
             rel="noopener noreferrer"
             variant="secondary"
             confirmBeforeNavigate
-            className="shrink-0 px-4"
+            className="flex-1 gap-1.5 px-4 text-sm"
           >
-            <MessageCircle className="h-5 w-5" strokeWidth={1.5} />
-            <span className="sr-only">Chat WhatsApp</span>
+            <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+            Chat WhatsApp
           </Button>
-          <Button href="/katalog" variant="primary" className="w-full gap-1.5">
+          <Button href="/katalog" variant="primary" className="flex-1 gap-1.5 px-4 text-sm">
             <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
             Pesan Online
           </Button>

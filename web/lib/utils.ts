@@ -1,7 +1,13 @@
 import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
+// twMerge di atas clsx — tanpa ini, override ukuran/padding lewat prop `className`
+// (mis. Button.tsx yang punya baseClasses px-6/py-3/text-base bawaan) tidak selalu
+// menang: clsx murni cuma menggabung string class, jadi kelas Tailwind yang bentrok
+// (px-6 vs px-5) menang berdasar urutan generate CSS, bukan urutan yang kita maksud —
+// inilah sumber bug tombol berukuran tidak konsisten.
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs);
+  return twMerge(clsx(inputs));
 }
 
 export const WHATSAPP_NUMBER = "6281234567890";
