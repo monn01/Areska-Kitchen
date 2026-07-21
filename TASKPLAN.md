@@ -122,16 +122,16 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 
 ---
 
-### Phase 1 — Infrastruktur & Database
-- [ ] Setup PostgreSQL lokal via Docker Compose (dev) — hosting production: **Neon** (managed Postgres, keputusan final 21 Juli 2026: gratis untuk skala bisnis ini, nol maintenance server, cocok dipasangkan dengan Vercel)
-- [ ] Migrasi `DATABASE_URL` dari placeholder ke koneksi Postgres asli, jalankan `prisma migrate dev` pertama kali
-- [ ] Review ulang schema `Product`/`Order`/`OrderItem`/`Transaction`/`User` (sudah ada di `prisma/schema.prisma` sejak Fase 1) — sesuaikan field yang kurang (mis. `stock`/`isAvailable` per produk kalau dibutuhkan, `Order.notes` untuk request khusus)
-- [ ] Tambah model untuk `Testimonial` & `Client` jadi benar-benar dinamis (sudah ada modelnya, tinggal dipakai) — termasuk field `row` untuk `Client` (marquee 2-baris "Dipercaya Oleh" yang baru dibangun di Fase 1 Phase 11, sudah didesain siap untuk ini)
-- [ ] Seed data awal dari `lib/data.ts` (menu, testimoni placeholder) ke database, supaya transisi statis→dinamis tidak kosong
+### Phase 1 — Infrastruktur & Database ✅ selesai 21 Juli 2026
+- [x] Setup PostgreSQL lokal via Docker Compose (`web/docker-compose.yml`, port host **5433** — bukan 5432 karena bentrok dengan PostgreSQL native Windows yang sudah jalan di mesin dev) — hosting production: **Neon**
+- [x] `DATABASE_URL` dev disambungkan ke Postgres lokal, migrasi pertama `20260721045609_init_ecommerce` berhasil di-apply
+- [x] Schema Prisma diperluas: `Product.price` (harga definitif pengganti priceMin/priceMax yang cuma tampilan), `Order` tambah `deliveryAddress`/`eventDate`/`notes`/`totalAmount`, `Transaction` tambah field Midtrans (`midtransOrderId`/`midtransTransactionId`/`midtransStatus`/`snapToken` — disiapkan sejak awal untuk Phase 6), `User.password` untuk credentials login, `Client.row` untuk marquee 2-baris. **Tidak** ditambah field stock/inventori — bisnis made-to-order (masak sesuai pesanan), bukan retail dari stok tetap
+- [x] Model `Testimonial` & `Client` siap dipakai dinamis (field `row` di `Client` cocok dengan struktur data marquee "Dipercaya Oleh" dari Fase 1 Phase 11)
+- [x] Seed (`prisma/seed.ts`, jalankan via `npx prisma db seed`) — 9 produk, 4 testimoni, 12 client dari `lib/data.ts`, plus 1 akun admin dev (kredensial di-print ke console saat seed jalan, **wajib diganti sebelum production**)
 
 ### Phase 2 — Autentikasi
 - [ ] Login admin: credentials sederhana (email+password, 1 akun) — cukup untuk 1 pengguna (orang tua)
-- [ ] Setup NextAuth/Auth.js, session strategy (JWT vs database session — database session lebih aman untuk revoke akses)
+- [ ] Setup NextAuth/Auth.js — session strategy: **JWT** (keputusan diambil saat schema Phase 1 dirancang: tidak butuh tabel adapter `Account`/`Session`/`VerificationToken` di Prisma karena hanya pakai Credentials provider, tidak ada OAuth; cukup untuk skala 1 admin + akun pelanggan opsional, lebih simpel dari database session tanpa mengorbankan banyak keamanan di kasus ini)
 - [ ] Middleware proteksi route `/admin/*`
 - [ ] Akun pelanggan (keputusan final 21 Juli 2026: **guest checkout + opsional akun**) — checkout tanpa daftar tetap bisa (retail: nasi kotak/snack box), tapi pelanggan juga bisa daftar akun untuk riwayat order otomatis tersimpan
 

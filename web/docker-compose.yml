@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: areska-kitchen-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: areska
+      POSTGRES_PASSWORD: areska_dev_password
+      POSTGRES_DB: areska_kitchen
+    ports:
+      # Host port 5433 (bukan 5432) — menghindari bentrok dengan PostgreSQL native
+      # Windows yang sudah berjalan di mesin ini sebagai service terpisah.
+      - "5433:5432"
+    volumes:
+      - areska_kitchen_pgdata:/var/lib/postgresql/data
+
+volumes:
+  areska_kitchen_pgdata:
