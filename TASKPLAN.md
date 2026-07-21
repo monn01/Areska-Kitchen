@@ -268,7 +268,14 @@ Diskusi dulu sebelum dikerjakan (user tanya pendapat soal navigasi keluar dari a
 - [x] **Filter katalog mobile** (`CatalogGrid.tsx`) — sebelumnya sidebar filter (Kategori+Harga+Occasion) selalu tampil penuh di atas grid produk di mobile, makan banyak ruang sebelum produk pertama kelihatan. Diubah ikuti pola e-commerce besar: di mobile cuma tampil baris ringkas "Filter" (badge titik oranye kalau ada filter aktif) + dropdown "Urutkan"; filter lengkap dibuka lewat bottom sheet (portal ke `document.body`, pola aman yang sama seperti drawer lain). Grid produk diubah dari 1 kolom jadi 2 kolom dari mobile (`grid-cols-2`, sebelumnya `sm:grid-cols-2` yang berarti 1 kolom di bawah 640px) — kartu produk & tombol tambah-keranjang ukurannya diperkecil proporsional (`sm:` breakpoint) supaya tetap nyaman di 2 kolom sempit
 - [x] Diverifikasi desktop lewat browser (layout tidak berubah/rusak dari sebelumnya). **Verifikasi tampilan mobile diserahkan ke user sendiri** — tool resize browser yang dipakai Claude tidak berhasil mengemulasikan viewport sempit untuk screenshot (selalu kembali ke lebar desktop meski sudah diminta resize), jadi tidak bisa dipastikan visual mobile-nya lewat automation; user konfirmasi hasilnya sudah baik setelah cek sendiri. `tsc --noEmit`/`next lint` bersih.
 
-### Phase 19 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
+### Phase 19 — Shortcut Beranda Desktop & Profil Akun Lengkap ✅ selesai 21 Juli 2026
+- [x] `MinimalHeader.tsx` — link "Beranda" (ikon rumah + teks) ditambah di antara logo dan ikon akun/keranjang, `hidden lg:flex` (cuma desktop — mobile sudah punya tab "Beranda" di `MobileTabBar`, sengaja tidak didobel)
+- [x] **Field baru** `User.avatarUrl`, `User.dateOfBirth`, `User.gender` (enum `MALE`/`FEMALE`), migrasi `20260721220000_user_profile_fields`. Foto profil pakai pola yang sama dengan gambar produk (tempel URL, belum ada upload storage sendiri)
+- [x] `lib/actions/account.ts` — action baru `updateProfile` (pola `useFormState` yang sama dengan `AddressForm`/`ProductForm`), validasi email/nomor WA tetap unik antar akun dan minimal salah satu harus diisi (supaya user tidak sengaja mengosongkan kedua identitas login sekaligus)
+- [x] `components/account/ProfileForm.tsx` (baru) — foto profil (dengan preview), nama, email, nomor WA, tanggal lahir (opsional), jenis kelamin (opsional), semua bisa diedit dari `/account`. Foto profil juga ditampilkan di header sapaan halaman akun
+- [x] Diverifikasi: data ke-fetch & tampil benar dari database (foto, tanggal lahir, jenis kelamin), lapisan Prisma/skema dites langsung (query update manual) karena tool otomasi browser sempat tidak konsisten saat mengetik ke salah satu field — pola form itu sendiri sudah identik dengan form lain yang sudah terbukti jalan. `tsc --noEmit`/`next lint` bersih.
+
+### Phase 20 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
 - [x] `tsc --noEmit` dan `next lint` bersih di setiap tahap (Phase 4-11)
 - [x] Smoke test dasar: server boot bersih tanpa error, route inti (`/`, `/checkout`, `/admin`, `/account`, `/admin/login`, `/account/login`, `/account/register`) merespons kode HTTP yang benar (200 untuk publik, 307 redirect untuk yang terproteksi tanpa sesi), konten dari database (produk/testimoni/dipercaya-oleh) terverifikasi tampil di homepage
 - [ ] **(instruksi user, berlaku mulai sesi ini)**: verifikasi fitur secara penuh di browser (klik-per-klik alur order, admin CRUD, dst.) dilakukan oleh user sendiri, bukan lewat automation tool — lebih cepat, dan feedback datang langsung dari pengguna nyata alih-alih tool otomasi yang beberapa kali kena kendala teknis di sesi-sesi sebelumnya
@@ -277,7 +284,7 @@ Diskusi dulu sebelum dikerjakan (user tanya pendapat soal navigasi keluar dari a
 - [ ] Security review: verifikasi signature webhook (sudah diimplementasi, perlu dites dengan transaksi sandbox asli), proteksi route admin/account, tidak ada data kartu tersimpan sendiri (PCI-DSS via Midtrans)
 - [ ] Test responsive mobile untuk seluruh flow baru (checkout, keranjang, admin)
 
-### Phase 20 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
+### Phase 21 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
 - [ ] Hosting final: **Vercel (app) + Neon (Postgres)** — konsisten dengan keputusan Phase 1
 - [ ] Setup domain (masih pending dari Fase 1 — `.id`/`.co.id`/`.com`)
 - [ ] Migrasi Midtrans dari sandbox ke production keys

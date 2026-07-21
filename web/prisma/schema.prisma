@@ -142,6 +142,11 @@ model Transaction {
   snapToken             String?
 }
 
+enum Gender {
+  MALE
+  FEMALE
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -151,9 +156,14 @@ model User {
   phone     String?  @unique
   /// Hash password (bcrypt) untuk login credentials — admin (wajib), pelanggan email/WA (wajib),
   /// null untuk akun yang daftar/masuk lewat Google (tidak ada password untuk dibobol).
-  password  String?
-  isAdmin   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  password    String?
+  isAdmin     Boolean   @default(false)
+  /// URL foto profil (tempel link, sama pola dengan gambar produk — belum ada upload storage
+  /// sendiri) — bukan wajib, dipakai di halaman akun & (kalau ada) header.
+  avatarUrl   String?
+  dateOfBirth DateTime?
+  gender      Gender?
+  createdAt   DateTime  @default(now())
 
   orders              Order[]
   addresses           Address[]

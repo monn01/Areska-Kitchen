@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { User } from "lucide-react";
+import { Home, User } from "lucide-react";
 import { CartButton } from "@/components/cart/CartButton";
 
 export function MinimalHeader() {
@@ -20,6 +20,16 @@ export function MinimalHeader() {
           <span className="font-heading text-lg font-semibold text-green-600">
             Areska Kitchen
           </span>
+        </Link>
+
+        {/* Shortcut balik ke landing page — cuma desktop, mobile sudah punya tab "Beranda"
+            di MobileTabBar jadi tidak perlu didobel di sini. */}
+        <Link
+          href="/"
+          className="hidden items-center gap-1.5 text-sm font-medium text-green-700/70 hover:text-green-700 lg:flex"
+        >
+          <Home className="h-4 w-4" strokeWidth={1.5} />
+          Beranda
         </Link>
 
         <div className="flex items-center">

@@ -2,8 +2,10 @@
 
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 import { normalizeIndonesianPhone } from "@/lib/utils";
 import { sendPasswordResetEmail } from "@/lib/mailer";
 
@@ -115,5 +117,73 @@ export async function resetPassword(
     prisma.passwordResetToken.deleteMany({ where: { userId: resetToken.userId } }),
   ]);
 
+  return { success: true };
+}
+
+const profileSchema = z
+  .object({
+    name: z.string().trim().min(1, "Nama wajib diisi"),
+    email: z.union([z.string().trim().email("Email tidak valid"), z.literal("")]).optional(),
+    phone: z
+      .union([z.string().trim().min(8, "Nomor WhatsApp tidak valid"), z.literal("")])
+      .optional(),
+    avatarUrl: z.union([z.string().trim().url("URL foto tidak valid"), z.literal("")]).optional(),
+    dateOfBirth: z.union([z.string().trim(), z.literal("")]).optional(),
+    gender: z.union([z.enum(["MALE", "FEMALE"]), z.literal("")]).optional(),
+  })
+  .refine((data) => Boolean(data.email) || Boolean(data.phone), {
+    message: "Isi email atau nomor WhatsApp — minimal salah satu, dipakai untuk login",
+    path: ["email"],
+  });
+
+export type ProfileFormState = { error?: string; success?: boolean };
+
+export async function updateProfile(
+  _prevState: ProfileFormState,
+  formData: FormData,
+): Promise<ProfileFormState> {
+  const session = await requireUser();
+
+  const parsed = profileSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    avatarUrl: formData.get("avatarUrl"),
+    dateOfBirth: formData.get("dateOfBirth"),
+    gender: formData.get("gender"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
+  }
+
+  const email = parsed.data.email || undefined;
+  const phone = parsed.data.phone ? normalizeIndonesianPhone(parsed.data.phone) : undefined;
+
+  if (email) {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing && existing.id !== session.user.id) {
+      return { error: "Email sudah dipakai akun lain." };
+    }
+  }
+  if (phone) {
+    const existing = await prisma.user.findUnique({ where: { phone } });
+    if (existing && existing.id !== session.user.id) {
+      return { error: "Nomor WhatsApp sudah dipakai akun lain." };
+    }
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      name: parsed.data.name,
+      email: email ?? null,
+      phone: phone ?? null,
+      avatarUrl: parsed.data.avatarUrl || null,
+      dateOfBirth: parsed.data.dateOfBirth ? new Date(parsed.data.dateOfBirth) : null,
+      gender: parsed.data.gender || null,
+    },
+  });
+
+  revalidatePath("/account");
   return { success: true };
 }
