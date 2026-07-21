@@ -2,17 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, MessageCircle, ShoppingBag } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { CartButton } from "@/components/cart/CartButton";
 import { buildWhatsAppLink, DEFAULT_WA_MESSAGE, cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { label: "Beranda", href: "#beranda" },
   { label: "Tentang Kami", href: "#tentang-kami" },
-  { label: "Menu", href: "#menu" },
+  { label: "Menu", href: "/katalog" },
   { label: "Testimoni", href: "#testimoni" },
   { label: "Kontak", href: "#kontak" },
 ];
@@ -32,10 +30,13 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    const sections = NAV_ITEMS.map((item) => ({
-      href: item.href,
-      el: document.querySelector<HTMLElement>(item.href),
-    }))
+    // Hanya item berupa anchor (#...) yang punya section untuk dipantau — item seperti
+    // "/katalog" adalah link ke halaman lain, bukan section di halaman ini.
+    const sections = NAV_ITEMS.filter((item) => item.href.startsWith("#"))
+      .map((item) => ({
+        href: item.href,
+        el: document.querySelector<HTMLElement>(item.href),
+      }))
       .filter((s): s is { href: string; el: HTMLElement } => s.el !== null)
       // Urutkan sesuai posisi asli di DOM (bukan urutan NAV_ITEMS) supaya deteksi
       // section aktif akurat walau urutan menu di navbar berbeda dari urutan section di halaman.
@@ -165,26 +166,21 @@ export function Navbar() {
             })}
           </nav>
 
-          <Link
-            href="/account"
-            aria-label="Akun saya"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-green-700 hover:bg-green-50"
-          >
-            <User className="h-5 w-5" strokeWidth={1.5} />
-          </Link>
-
-          <CartButton />
-
-          <div className="hidden lg:block">
+          <div className="hidden items-center gap-3 lg:flex">
             <Button
               href={buildWhatsAppLink(DEFAULT_WA_MESSAGE)}
               target="_blank"
               rel="noopener noreferrer"
-              variant="primary"
+              variant="secondary"
               confirmBeforeNavigate
-              className="px-5 py-2.5 text-sm"
+              className="gap-1.5 px-5 py-2.5 text-sm"
             >
-              Pesan Sekarang
+              <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+              Chat WhatsApp
+            </Button>
+            <Button href="/katalog" variant="primary" className="gap-1.5 px-5 py-2.5 text-sm">
+              <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
+              Pesan Online
             </Button>
           </div>
 
@@ -271,16 +267,27 @@ export function Navbar() {
                   );
                 })}
               </nav>
-              <div className="mt-auto px-6 py-6">
+              <div className="mt-auto space-y-2.5 px-6 py-6">
+                <Button
+                  href="/katalog"
+                  variant="primary"
+                  className="w-full gap-1.5"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
+                  Pesan Online
+                </Button>
                 <Button
                   href={buildWhatsAppLink(DEFAULT_WA_MESSAGE)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  variant="primary"
-                  className="w-full"
+                  variant="secondary"
+                  confirmBeforeNavigate
+                  className="w-full gap-1.5"
                   onClick={() => setMobileOpen(false)}
                 >
-                  Pesan Sekarang
+                  <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
+                  Chat WhatsApp
                 </Button>
               </div>
             </motion.div>

@@ -55,7 +55,7 @@ export function CheckoutForm() {
     // ke-trigger keliru saat halaman baru dimuat (items masih [] sesaat sebelum hydrasi
     // selesai, padahal keranjang aslinya tidak kosong).
     if (isHydrated && items.length === 0) {
-      router.replace("/#menu");
+      router.replace("/katalog");
     }
   }, [isHydrated, items.length, router]);
 

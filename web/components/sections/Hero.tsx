@@ -71,24 +71,24 @@ export function Hero() {
             maupun acara pribadi Anda.
           </motion.p>
           <motion.div variants={item} className="mt-8 flex flex-wrap items-center gap-4">
-            <Button href="#menu" variant="secondary">
-              Lihat Menu
-            </Button>
             <Magnetic className="inline-block">
-              <Button
-                href={buildWhatsAppLink(DEFAULT_WA_MESSAGE)}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="primary"
-                confirmBeforeNavigate
-              >
-                Pesan Sekarang
+              <Button href="/katalog" variant="primary">
+                Pesan Online
               </Button>
             </Magnetic>
+            <Button
+              href={buildWhatsAppLink(DEFAULT_WA_MESSAGE)}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="secondary"
+              confirmBeforeNavigate
+            >
+              Chat WhatsApp
+            </Button>
           </motion.div>
           <motion.p variants={item} className="mt-4 text-sm text-green-700/80">
-            Sistem pemesanan online segera hadir — untuk saat ini, pesan
-            langsung lewat WhatsApp.
+            Pesan langsung online, atau hubungi kami lewat WhatsApp untuk
+            kebutuhan acara khusus.
           </motion.p>
         </motion.div>
 
