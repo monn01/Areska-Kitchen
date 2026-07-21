@@ -353,6 +353,18 @@ Diverifikasi lewat Chrome browser automation: navbar hover/active underline bena
 
 **Titik mulai sesi berikutnya:** Menunggu feedback user dari testing manual. Item yang masih butuh input klien sebelum bisa go-live: kunci Midtrans sandbox, koordinat lokasi dapur + radius + tarif ongkir asli (sekarang default estimasi), NIB/NPWP untuk Midtrans production, dan checklist lama dari Fase 1 (nomor WA asli, menu & harga final, dst.). Deployment (Phase 13) tetap menunggu sampai semua ini clear, sesuai arahan user di awal Fase 2.
 
+### 21 Juli 2026 — Sesi 4 (Bug fix: drawer keranjang transparan + halaman baru tanpa navigasi)
+
+User cek langsung di browser dan lapor "UI berantakan, problem sidebar seperti sebelumnya kembali terjadi". Dua bug nyata ditemukan & diperbaiki:
+
+1. **Drawer keranjang transparan (regresi dari bug Phase 11)** — `CartButton` (baru di Phase 4-11, drawer `fixed` sendiri) ditaruh di dalam `<header>` yang punya `backdrop-blur` kondisional, containing-block bug yang persis sama dengan drawer navigasi mobile yang sudah diperbaiki sebelumnya. **Fix lebih general kali ini**: drawer & overlay `CartButton` di-render lewat `createPortal` langsung ke `document.body` (`components/cart/CartButton.tsx`) — bukan cuma dipindah jadi sibling seperti fix drawer navigasi, supaya kelas bug ini tidak bisa terulang lagi di manapun tombol keranjang ini nanti diletakkan ulang.
+2. **Halaman checkout/order/account tanpa navigasi** — `/checkout`, `/order/[id]`, `/account`, `/account/login`, `/account/register` tidak pernah render `<Navbar>` publik (Navbar cuma ada di `app/page.tsx`, bukan root layout), jadi terasa terputus dari situs utama. Ditambah `components/ui/MinimalHeader.tsx` (logo + link ke beranda) ke semua halaman itu.
+3. **Bug tambahan ditemukan saat verifikasi fix #2**: redirect keliru di halaman checkout — `CheckoutForm` cek `items.length === 0` untuk redirect balik ke menu, tapi `CartProvider` baru selesai baca localStorage secara *async* (`useEffect`), jadi pada render pertama `items` masih `[]` walau keranjang aslinya tidak kosong → race condition, checkout ke-redirect sebelum data sempat termuat. Fix: `CartProvider` sekarang expose `isHydrated`, redirect di `CheckoutForm` menunggu itu dulu sebelum menyimpulkan keranjang kosong (`lib/cart-context.tsx`, `components/checkout/CheckoutForm.tsx`).
+
+Diverifikasi ulang di browser: drawer keranjang solid & berfungsi (tambah item, ubah qty, ke checkout), halaman checkout tampil lengkap dengan header + data keranjang benar tanpa redirect keliru, alur registrasi pelanggan end-to-end (daftar → auto-login → `/account` dengan riwayat pesanan & alamat) berhasil, drawer navigasi mobile (hamburger) dicek ulang tidak ikut regresi. `tsc`/`lint` bersih.
+
+**Pelajaran ditambahkan ke catatan lama**: pola "pindahkan elemen `fixed` keluar dari ancestor ber-`backdrop-filter`" itu rapuh kalau elemennya banyak/akan bertambah — solusi yang lebih tahan lama adalah **portal ke `document.body`** untuk semua drawer/modal baru ke depannya, supaya tidak perlu diingat-ingat manual setiap kali menambah komponen baru.
+
 ---
 
 *Update checklist ini secara berkala. Setiap Phase selesai → commit + note progress di sini.*

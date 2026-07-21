@@ -5,9 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { STATUS_LABELS } from "@/lib/order-status";
 import { buildWhatsAppLink } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
+import { MinimalHeader } from "@/components/ui/MinimalHeader";
 import { RetryPaymentButton } from "@/components/checkout/RetryPaymentButton";
 
-export default async function OrderConfirmationPage({ params }: { params: { id: string } }) {
+export default async function OrderConfirmationPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const order = await prisma.order.findUnique({
     where: { id: params.id },
     include: { items: { include: { product: true } }, transaction: true },
@@ -17,16 +22,22 @@ export default async function OrderConfirmationPage({ params }: { params: { id: 
   const needsManualReview = order.isCustomEvent || order.deliveryLat == null;
 
   return (
-    <div className="min-h-screen bg-cream-100 px-4 py-24 sm:px-6 sm:py-28 lg:px-8">
-      <div className="mx-auto max-w-2xl">
+    <div className="min-h-screen bg-cream-100">
+      <MinimalHeader />
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="rounded-2xl bg-cream-50 p-8 text-center shadow-[0_2px_12px_rgba(31,77,58,0.08)]">
           {needsManualReview ? (
             <Clock className="mx-auto h-12 w-12 text-orange-500" strokeWidth={1.5} />
           ) : (
-            <CheckCircle2 className="mx-auto h-12 w-12 text-green-600" strokeWidth={1.5} />
+            <CheckCircle2
+              className="mx-auto h-12 w-12 text-green-600"
+              strokeWidth={1.5}
+            />
           )}
           <h1 className="mt-4 font-heading text-2xl font-semibold text-green-700">
-            {needsManualReview ? "Pesanan Diterima — Menunggu Konfirmasi" : "Pesanan Diterima"}
+            {needsManualReview
+              ? "Pesanan Diterima — Menunggu Konfirmasi"
+              : "Pesanan Diterima"}
           </h1>
           <p className="mt-2 text-green-700/70">
             Nomor Order: <span className="font-mono">{order.id}</span>

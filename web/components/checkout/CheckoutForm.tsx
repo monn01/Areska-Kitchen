@@ -24,7 +24,7 @@ function tomorrowISODate() {
 }
 
 export function CheckoutForm() {
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal, clearCart, isHydrated } = useCart();
   const router = useRouter();
 
   const [customerName, setCustomerName] = useState("");
@@ -51,10 +51,13 @@ export function CheckoutForm() {
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (items.length === 0) {
+    // Tunggu keranjang selesai dibaca dari localStorage dulu — tanpa ini, redirect bisa
+    // ke-trigger keliru saat halaman baru dimuat (items masih [] sesaat sebelum hydrasi
+    // selesai, padahal keranjang aslinya tidak kosong).
+    if (isHydrated && items.length === 0) {
       router.replace("/#menu");
     }
-  }, [items.length, router]);
+  }, [isHydrated, items.length, router]);
 
   function handleUseCurrentLocation() {
     if (!navigator.geolocation) {
@@ -140,6 +143,9 @@ export function CheckoutForm() {
     window.location.href = payment.redirectUrl;
   }
 
+  if (!isHydrated) {
+    return null;
+  }
   if (items.length === 0) {
     return null;
   }

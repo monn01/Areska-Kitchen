@@ -19,6 +19,10 @@ interface CartContextValue {
   clearCart: () => void;
   subtotal: number;
   itemCount: number;
+  /** false sesaat sebelum localStorage selesai dibaca — cek ini dulu sebelum menyimpulkan
+   * keranjang "kosong" (mis. redirect di halaman checkout), supaya tidak salah redirect
+   * saat item aslinya masih ada tapi belum sempat ter-load. */
+  isHydrated: boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -76,7 +80,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQuantity, clearCart, subtotal, itemCount }}
+      value={{
+        items,
+        addItem,
+        removeItem,
+        updateQuantity,
+        clearCart,
+        subtotal,
+        itemCount,
+        isHydrated: hydrated,
+      }}
     >
       {children}
     </CartContext.Provider>
