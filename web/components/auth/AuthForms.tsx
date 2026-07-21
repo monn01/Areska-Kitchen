@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { registerUser } from "@/lib/actions/account";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,53 @@ function GoogleIcon({ className }: { className?: string }) {
 const inputClass =
   "w-full rounded-xl border border-green-200 bg-cream-50 px-4 py-2.5 text-green-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-orange-300";
 const labelClass = "mb-1.5 block text-sm font-medium text-green-700";
+
+/** Field password dengan toggle tampil/sembunyi (ikon mata) — dipakai di form masuk,
+ * daftar, dan halaman reset password supaya konsisten. */
+export function PasswordInput({
+  id,
+  value,
+  onChange,
+  required,
+  minLength,
+  autoComplete,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  minLength?: number;
+  autoComplete?: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative">
+      <input
+        id={id}
+        type={visible ? "text" : "password"}
+        required={required}
+        minLength={minLength}
+        autoComplete={autoComplete}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(inputClass, "pr-11")}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        aria-label={visible ? "Sembunyikan password" : "Tampilkan password"}
+        className="absolute inset-y-0 right-0 flex items-center px-3 text-green-700/50 hover:text-green-700"
+      >
+        {visible ? (
+          <EyeOff className="h-4 w-4" strokeWidth={1.5} />
+        ) : (
+          <Eye className="h-4 w-4" strokeWidth={1.5} />
+        )}
+      </button>
+    </div>
+  );
+}
 
 export function AuthForms({
   defaultTab = "login",
@@ -160,25 +207,22 @@ function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
           />
         </div>
         <div>
-          <div className="flex items-center justify-between">
-            <label htmlFor="login-password" className={labelClass}>
-              Password
-            </label>
-            <Link
-              href="/account/forgot-password"
-              className="mb-1.5 text-xs font-medium text-green-600 hover:underline"
-            >
-              Lupa password?
-            </Link>
-          </div>
-          <input
+          <label htmlFor="login-password" className={labelClass}>
+            Password
+          </label>
+          <PasswordInput
             id="login-password"
-            type="password"
             required
+            autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
+            onChange={setPassword}
           />
+          <Link
+            href="/account/forgot-password"
+            className="mt-1.5 inline-block text-xs font-medium text-green-600 hover:underline"
+          >
+            Lupa password?
+          </Link>
         </div>
 
         {error && <p className="text-sm text-[#B3432E]">{error}</p>}
@@ -297,28 +341,26 @@ function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
             <label htmlFor="register-password" className={labelClass}>
               Password
             </label>
-            <input
+            <PasswordInput
               id="register-password"
-              type="password"
               required
               minLength={6}
+              autoComplete="new-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={inputClass}
+              onChange={setPassword}
             />
           </div>
           <div>
             <label htmlFor="register-confirm-password" className={labelClass}>
               Ulangi Password
             </label>
-            <input
+            <PasswordInput
               id="register-confirm-password"
-              type="password"
               required
               minLength={6}
+              autoComplete="new-password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={inputClass}
+              onChange={setConfirmPassword}
             />
           </div>
         </div>

@@ -5,10 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { MinimalHeader } from "@/components/ui/MinimalHeader";
+import { PasswordInput } from "@/components/auth/AuthForms";
 import { resetPassword } from "@/lib/actions/account";
-
-const inputClass =
-  "w-full rounded-xl border border-green-200 bg-cream-50 px-4 py-3 text-green-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-orange-300";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -83,14 +81,13 @@ export default function ResetPasswordPage() {
                 <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-green-700">
                   Password Baru
                 </label>
-                <input
+                <PasswordInput
                   id="password"
-                  type="password"
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={inputClass}
+                  onChange={setPassword}
                 />
               </div>
               <div>
@@ -100,14 +97,13 @@ export default function ResetPasswordPage() {
                 >
                   Ulangi Password Baru
                 </label>
-                <input
+                <PasswordInput
                   id="confirmPassword"
-                  type="password"
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={inputClass}
+                  onChange={setConfirmPassword}
                 />
               </div>
 
