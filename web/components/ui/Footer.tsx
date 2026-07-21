@@ -54,7 +54,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               {[
                 ["Beranda", "#beranda"],
-                ["Menu", "/katalog"],
+                ["Menu", "#menu"],
                 ["Tentang Kami", "#tentang-kami"],
                 ["Testimoni", "#testimoni"],
                 ["Kontak", "#kontak"],

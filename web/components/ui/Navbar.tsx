@@ -10,7 +10,7 @@ import { buildWhatsAppLink, DEFAULT_WA_MESSAGE, cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { label: "Beranda", href: "#beranda" },
   { label: "Tentang Kami", href: "#tentang-kami" },
-  { label: "Menu", href: "/katalog" },
+  { label: "Menu", href: "#menu" },
   { label: "Testimoni", href: "#testimoni" },
   { label: "Kontak", href: "#kontak" },
 ];
@@ -173,12 +173,12 @@ export function Navbar() {
               rel="noopener noreferrer"
               variant="secondary"
               confirmBeforeNavigate
-              className="gap-1.5 px-5 py-2.5 text-sm"
+              className="gap-1.5"
             >
               <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
               Chat WhatsApp
             </Button>
-            <Button href="/katalog" variant="primary" className="gap-1.5 px-5 py-2.5 text-sm">
+            <Button href="/katalog" variant="primary" className="gap-1.5">
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
               Pesan Online
             </Button>
