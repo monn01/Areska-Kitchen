@@ -2,10 +2,11 @@
 
 | | |
 |---|---|
-| **Versi** | 1.0 |
-| **Tanggal** | 20 Juli 2026 |
+| **Versi** | 1.1 |
+| **Tanggal** | 21 Juli 2026 |
 | **Referensi** | PRD.md v1.0 |
-| **Fokus dokumen ini** | Detail eksekusi **Fase 1 (Landing Page)**. Fase 2 & 3 masih high-level, akan di-breakdown ulang saat gilirannya tiba. |
+| **Fokus dokumen ini** | Detail eksekusi **Fase 1 (Landing Page)** — selesai kode, deployment menyusul — dan **Fase 2 (E-commerce/Ordering)**, breakdown penuh. Fase 3 (Dashboard Keuangan) masih high-level, akan di-breakdown ulang saat Fase 2 selesai. |
+| **Keputusan deployment** | Seluruh kode Fase 1 + Fase 2 diselesaikan dulu sebelum ada deployment production — bukan deploy bertahap per fase. |
 
 ---
 
@@ -108,18 +109,92 @@
 
 ---
 
-## FASE 2: E-COMMERCE/ORDERING — Roadmap High-Level
+## FASE 2: E-COMMERCE/ORDERING — Task Breakdown
 
-*(Detail task breakdown menyusul setelah Fase 1 live & stabil)*
+| | |
+|---|---|
+| **Referensi** | PRD.md §7, §10-11 |
+| **Prasyarat masuk fase ini** | Fase 1 live & stabil di GitHub (`main` branch, commit `983210c`) — deployment production Fase 1 sendiri masih menyusul, dikerjakan bareng di akhir Fase 2 sesuai keputusan user: seluruh kode Fase 1+2 selesai dulu sebelum ada yang di-deploy |
+| **Keputusan arsitektur** | Schema Prisma sudah disiapkan sejak Fase 1 (`Product`, `Order`, `OrderItem`, `Transaction`, `User`) — fase ini mengaktifkan model-model itu, bukan mendesain ulang dari nol |
 
-- [ ] Setup autentikasi (NextAuth/Auth.js) — admin & pelanggan
-- [ ] Migrasi katalog produk dari statis (Fase 1) ke dinamis (CRUD admin)
-- [ ] Build cart & checkout flow
-- [ ] Integrasi Midtrans (Snap API)
-- [ ] Flow order khusus untuk prasmanan/event besar (butuh konfirmasi manual sebelum bayar)
-- [ ] Sistem status order (pending → dikonfirmasi → diproses → selesai)
-- [ ] Notifikasi status order (WhatsApp API/email)
-- [ ] Verifikasi bisnis untuk payment gateway (cek kesiapan NIB/NPWP)
+### Cara Baca Breakdown Ini
+Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk yang blocking-nya di orang tua/keputusan bisnis, bukan teknis. Beberapa keputusan arsitektur (auth strategy, hosting Postgres, WhatsApp API vs manual) ditandai **(butuh keputusan)** — teknis tapi perlu pilihan sebelum mulai koding supaya tidak ada rework besar di tengah jalan.
+
+---
+
+### Phase 1 — Infrastruktur & Database
+- [ ] Setup PostgreSQL (lokal untuk dev — Docker Compose direkomendasikan; hosting production **(butuh keputusan)**: VPS terkelola sendiri vs managed Postgres seperti Neon/Supabase/Railway — Vercel tidak host Postgres native)
+- [ ] Migrasi `DATABASE_URL` dari placeholder ke koneksi Postgres asli, jalankan `prisma migrate dev` pertama kali
+- [ ] Review ulang schema `Product`/`Order`/`OrderItem`/`Transaction`/`User` (sudah ada di `prisma/schema.prisma` sejak Fase 1) — sesuaikan field yang kurang (mis. `stock`/`isAvailable` per produk kalau dibutuhkan, `Order.notes` untuk request khusus)
+- [ ] Tambah model untuk `Testimonial` & `Client` jadi benar-benar dinamis (sudah ada modelnya, tinggal dipakai) — termasuk field `row` untuk `Client` (marquee 2-baris "Dipercaya Oleh" yang baru dibangun di Fase 1 Phase 11, sudah didesain siap untuk ini)
+- [ ] Seed data awal dari `lib/data.ts` (menu, testimoni placeholder) ke database, supaya transisi statis→dinamis tidak kosong
+
+### Phase 2 — Autentikasi
+- [ ] **(butuh keputusan)** Strategi login admin: credentials sederhana (email+password, 1 akun) vs magic link — untuk 1 pengguna (orang tua), credentials sederhana kemungkinan cukup dan lebih gampang dipakai
+- [ ] Setup NextAuth/Auth.js, session strategy (JWT vs database session — database session lebih aman untuk revoke akses)
+- [ ] Middleware proteksi route `/admin/*`
+- [ ] **(butuh keputusan)** Akun pelanggan: guest checkout saja (lebih cepat konversi, sesuai rekomendasi PRD §7) vs wajib akun — default rekomendasi: guest checkout untuk retail (nasi kotak/snack box), opsional akun untuk lihat riwayat order
+
+### Phase 3 — Dashboard Admin: Manajemen Konten
+- [ ] Layout admin (sidebar/nav terpisah dari landing page, bukan bagian dari navbar publik)
+- [ ] Halaman login admin
+- [ ] CRUD Produk (nama, kategori, deskripsi, harga, foto — upload gambar, toggle aktif/nonaktif)
+- [ ] CRUD Testimoni (ganti placeholder statis dari Fase 1 jadi dikelola dari sini)
+- [ ] CRUD "Dipercaya Oleh" (nama instansi, logo, baris 1/2, toggle tampil) — **ini yang disebut user di Fase 1 sesi sebelumnya ("bisa diatur di dashboard admin nantinya")**, komponen tampilan (marquee, `TiltCard`) sudah siap, tinggal disambungkan ke data dinamis
+- [ ] List & detail order masuk (lihat semua order, filter by status)
+
+### Phase 4 — Katalog Publik Dinamis
+- [ ] Ganti `menuItems`/`trustIndicators`/`testimonials`/`trustedBrands` statis di `lib/data.ts` jadi query database (Server Component)
+- [ ] Halaman detail produk (opsional — atau tetap grid+card seperti Fase 1, tergantung kebutuhan checkout)
+- [ ] Filter kategori tetap jalan seperti Fase 1, sekarang sumber datanya dinamis
+
+### Phase 5 — Keranjang & Checkout
+- [ ] State keranjang sisi klien (persist ke localStorage, guest-friendly)
+- [ ] UI keranjang (drawer atau halaman terpisah): tambah/kurang qty, hapus item, subtotal
+- [ ] Halaman checkout: info kontak, alamat/catatan pengiriman
+- [ ] **Pembeda dua jenis order (PRD §7, wajib)**: order retail (nasi kotak/snack box) → langsung lanjut ke pembayaran; order custom/event besar (prasmanan) → masuk status `PENDING`, butuh konfirmasi manual admin dulu sebelum link pembayaran dikirim — field `Order.isCustomEvent` sudah ada di schema untuk ini
+- [ ] Order tersimpan ke database sebelum proses bayar dimulai
+
+### Phase 6 — Integrasi Payment (Midtrans)
+- [ ] **(butuh input klien)** Verifikasi kesiapan dokumen legal bisnis (NIB/NPWP) untuk pendaftaran akun bisnis Midtrans — tanpa ini, tidak bisa lanjut ke akun production (sandbox tetap bisa dipakai untuk development)
+- [ ] Daftar akun Midtrans (mulai dari sandbox/testing), ambil API key
+- [ ] Integrasi Snap API (checkout redirect/popup)
+- [ ] Webhook/callback handler (API route) — update status `Transaction` & `Order` otomatis saat pembayaran berhasil/gagal, dengan verifikasi signature (wajib, jangan percaya payload webhook mentah-mentah)
+- [ ] Halaman hasil: sukses / gagal / pending pembayaran
+
+### Phase 7 — Status Order & Notifikasi
+- [ ] Alur status order lengkap: `PENDING` → `CONFIRMED` → `PROCESSING` → `COMPLETED` (+ `CANCELLED`) — enum `OrderStatus` sudah ada di schema
+- [ ] Admin: aksi konfirmasi manual untuk order custom/event (Phase 5) sebelum lanjut ke pembayaran
+- [ ] Halaman tracking status order untuk pelanggan (by order ID, tanpa perlu login)
+- [ ] **(butuh keputusan)** Notifikasi perubahan status: WhatsApp Business API resmi (perlu verifikasi Meta Business, berbayar) vs pendekatan sederhana (link `wa.me` pre-filled seperti CTA di Fase 1, dikirim manual/semi-otomatis) — rekomendasi mulai dari pendekatan sederhana dulu, upgrade ke API resmi kalau volume order sudah signifikan
+
+### Phase 8 — Akun Pelanggan (opsional, tergantung Phase 2)
+- [ ] Registrasi & login pelanggan (kalau diputuskan tidak guest-only)
+- [ ] Halaman riwayat order pelanggan
+
+### Phase 9 — Testing & QA
+- [ ] Test end-to-end alur order: browse → keranjang → checkout → bayar (sandbox Midtrans) → webhook update status → konfirmasi
+- [ ] Test CRUD admin (produk, testimoni, dipercaya oleh)
+- [ ] Security review: verifikasi signature webhook, proteksi route admin, tidak ada data kartu tersimpan sendiri (sesuai PRD §12 — PCI-DSS via Midtrans)
+- [ ] Test responsive mobile untuk seluruh flow baru (checkout, admin) — dengan pelajaran dari Fase 1: jangan andalkan automation tool session ini untuk verifikasi visual mobile, selalu cross-check di device asli
+
+### Phase 10 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
+- [ ] **(butuh keputusan)** Hosting final: Vercel (perlu Postgres eksternal terpisah, mis. Neon) vs VPS+Docker Compose (semua dalam satu tempat, lebih murah untuk skala kecil, tapi maintenance manual)
+- [ ] Setup domain (masih pending dari Fase 1 — `.id`/`.co.id`/`.com`)
+- [ ] Migrasi Midtrans dari sandbox ke production keys
+- [ ] Environment secrets production (`DATABASE_URL`, `NEXTAUTH_SECRET`, Midtrans keys)
+- [ ] Deploy Fase 1 (landing page, sekarang dengan katalog dinamis) + Fase 2 (ordering) sekaligus
+- [ ] Final review bareng orang tua sebelum go-live
+
+---
+
+## Checklist Keputusan & Input Klien Sebelum/Selama Fase 2
+
+- [ ] Dokumen legal bisnis (NIB/NPWP) — kesiapan untuk verifikasi akun bisnis Midtrans
+- [ ] Strategi akun pelanggan: guest checkout only vs opsional login
+- [ ] Notifikasi status order: WhatsApp API resmi vs pendekatan manual/semi-otomatis
+- [ ] Hosting production: Vercel+Postgres eksternal vs VPS+Docker Compose
+- [ ] (Carry-over dari Fase 1, masih relevan) Nomor WA Business asli, menu & harga final, foto produk asli, testimoni asli, izin nama/logo instansi, keputusan domain
 
 ---
 
@@ -202,6 +277,18 @@ Sempat ada 2 masalah teknis saat verifikasi browser, keduanya sudah diperbaiki d
 Diverifikasi lewat Chrome browser automation: navbar hover/active underline benar, scroll-spy akurat di semua section, tilt hover di gambar Hero & Tentang Kami terasa, marquee 2 baris bergerak berlawanan arah dan pause saat hover per-baris (dicek lewat `getComputedStyle` `animationPlayState`), scroll-reveal tiap section replay dengan varian berbeda. `tsc --noEmit` dan `next lint` bersih tanpa error.
 
 **Belum sempat diverifikasi:** tampilan mobile asli (hamburger, marquee, drawer) — tool automation sesi ini tidak bisa resize viewport browser (limitasi yang sama seperti dicatat di Phase 9 sesi sebelumnya). Logic responsive-nya tidak diubah dari breakpoint yang sudah ada, tapi tetap disarankan quick check manual di HP asli sebelum dianggap final.
+
+**Update dalam sesi yang sama:** user cek langsung di HP asli, lapor 2 bug drawer mobile — keduanya diperbaiki, detail lengkap ada di checklist Phase 11 baris terakhir. Yang kedua (drawer transparan) baru betul-betul ketemu akar masalahnya setelah user kirim screenshot bukti (`gambar-ref/navbar trans.jpeg`) — pelajaran: untuk bug visual yang sulit direproduksi lewat automation tool, minta screenshot/bukti visual dari user itu jauh lebih efektif daripada menebak dari kode saja.
+
+### 21 Juli 2026 — Sesi 3 (Push ke GitHub + Rancang Fase 2)
+
+**Push ke GitHub (`monn01/Areska-Kitchen`):** Sebelumnya hanya folder `web/` yang punya git history (13 commit), sementara `PRD.md`/`DESIGN.md`/`TASKPLAN.md`/`gambar-ref/` di root belum ter-track sama sekali. Digabung jadi satu repo git tunggal di root project — riwayat commit `web/` (14 commit termasuk commit Phase 11 sesi ini) digabung lewat teknik subtree merge manual (`git read-tree --prefix=web/`, karena `git subtree add` menolak kalau folder tujuan sudah ada) supaya history lama tidak hilang, digabung dengan 1 commit awal berisi dokumen-dokumen root. Ditambah `.gitignore` root baru (exclude `.claude/settings.local.json` — config lokal, bukan source project). Push ke `main` berhasil tanpa atribusi Claude Code di commit message manapun.
+
+**Upgrade TASKPLAN.md untuk Fase 2:** Breakdown Fase 2 (E-commerce/Ordering) di-detail-kan dari daftar high-level jadi 10 Phase (lihat bagian "FASE 2" di atas), mengacu ke PRD §7 dan schema Prisma yang sudah disiapkan sejak Fase 1 (`Product`, `Order`, `OrderItem`, `Transaction`, `User` — tinggal diaktifkan, bukan didesain ulang). Beberapa keputusan arsitektur ditandai eksplisit **(butuh keputusan)** karena berdampak besar kalau salah pilih di awal: strategi auth pelanggan (guest vs akun), hosting Postgres (VPS vs managed), dan pendekatan notifikasi WhatsApp (API resmi vs manual) — direkomendasikan diputuskan sebelum mulai koding Phase 5-7 supaya tidak ada rework.
+
+**Keputusan user:** seluruh kode Fase 1 + Fase 2 diselesaikan dulu sebelum ada deployment production apapun — dicatat di header dokumen ini.
+
+**Titik mulai sesi berikutnya:** Fase 2 Phase 1 (setup PostgreSQL + migrasi schema) — tapi ada beberapa **(butuh keputusan)** yang sebaiknya dikonfirmasi dulu bareng user sebelum mulai koding (lihat "Checklist Keputusan & Input Klien" di atas), khususnya soal hosting Postgres karena itu menentukan setup dev environment dari awal.
 
 ---
 
