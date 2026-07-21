@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MinimalHeader } from "@/components/ui/MinimalHeader";
 import { Footer } from "@/components/ui/Footer";
+import { MobileTabBar } from "@/components/ui/MobileTabBar";
 import { CatalogGrid } from "@/components/sections/CatalogGrid";
 import { KatalogAuthGate } from "@/components/auth/KatalogAuthGate";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,7 @@ export default async function KatalogPage() {
   });
 
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="min-h-screen bg-cream-100 pb-16 lg:pb-0">
       <MinimalHeader />
       <div
         aria-hidden={!session}
@@ -48,6 +49,7 @@ export default async function KatalogPage() {
       </div>
 
       <Footer />
+      <MobileTabBar />
 
       {!session && <KatalogAuthGate />}
     </div>

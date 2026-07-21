@@ -8,6 +8,7 @@ import { AccountLogoutButton } from "@/components/account/AccountLogoutButton";
 import { AddressForm } from "@/components/account/AddressForm";
 import { AddressList } from "@/components/account/AddressList";
 import { MinimalHeader } from "@/components/ui/MinimalHeader";
+import { MobileTabBar } from "@/components/ui/MobileTabBar";
 
 export default async function AccountPage() {
   const session = await getServerSession(authOptions);
@@ -23,7 +24,7 @@ export default async function AccountPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="min-h-screen bg-cream-100 pb-16 lg:pb-0">
       <MinimalHeader />
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="flex items-center justify-between">
@@ -89,6 +90,8 @@ export default async function AccountPage() {
           </div>
         </div>
       </div>
+
+      <MobileTabBar />
     </div>
   );
 }

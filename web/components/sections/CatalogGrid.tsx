@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Check, Plus } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, Plus, SlidersHorizontal, X } from "lucide-react";
 import { ProductImage } from "@/components/ui/ProductImage";
+import { Button } from "@/components/ui/Button";
 import {
   CATEGORY_ORDER,
   CATEGORY_LABELS,
@@ -46,12 +49,12 @@ function AddToCartButton({ product }: { product: Product }) {
       type="button"
       onClick={handleAdd}
       aria-label={`Tambah ${product.name} ke keranjang`}
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-500 text-green-900 transition-transform duration-base hover:scale-110 active:scale-95"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500 text-green-900 transition-transform duration-base hover:scale-110 active:scale-95 sm:h-11 sm:w-11"
     >
       {justAdded ? (
-        <Check className="h-5 w-5" strokeWidth={2.5} />
+        <Check className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2.5} />
       ) : (
-        <Plus className="h-5 w-5" strokeWidth={2} />
+        <Plus className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2} />
       )}
     </button>
   );
@@ -70,23 +73,27 @@ function ProductCard({ product }: { product: Product }) {
           className="h-full w-full transition-transform duration-base ease-out group-hover:scale-105"
         />
         {product.isPopular && (
-          <span className="absolute left-3 top-3 rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold text-green-900">
+          <span className="absolute left-2 top-2 rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-semibold text-green-900 sm:left-3 sm:top-3 sm:px-3 sm:py-1 sm:text-xs">
             Populer
           </span>
         )}
       </div>
-      <div className="flex flex-1 flex-col p-5">
-        <p className="text-xs font-medium uppercase tracking-wide text-green-500">
+      <div className="flex flex-1 flex-col p-3 sm:p-5">
+        <p className="text-[10px] font-medium uppercase tracking-wide text-green-500 sm:text-xs">
           {CATEGORY_LABELS[product.category]}
         </p>
-        <h3 className="mt-1 font-heading text-lg font-semibold text-green-700">{product.name}</h3>
-        <p className="mt-2 line-clamp-2 flex-1 text-sm leading-relaxed text-green-700/70">
+        <h3 className="mt-1 font-heading text-sm font-semibold text-green-700 sm:text-lg">
+          {product.name}
+        </h3>
+        <p className="mt-1 line-clamp-2 flex-1 text-xs leading-relaxed text-green-700/70 sm:mt-2 sm:text-sm">
           {product.description}
         </p>
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-green-100 pt-4">
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-green-100 pt-3 sm:mt-4 sm:gap-3 sm:pt-4">
           <div>
-            <p className="text-xs uppercase tracking-wide text-green-500">Harga</p>
-            <p className="text-sm font-semibold text-green-700">
+            <p className="hidden text-xs uppercase tracking-wide text-green-500 sm:block">
+              Harga
+            </p>
+            <p className="text-xs font-semibold text-green-700 sm:text-sm">
               Rp {product.price.toLocaleString("id-ID")}
             </p>
           </div>
@@ -153,6 +160,153 @@ function PriceRangeFilter({
   );
 }
 
+interface FilterState {
+  availableCategories: ProductCategory[];
+  activeCategories: Set<ProductCategory>;
+  toggleCategory: (cat: ProductCategory) => void;
+  priceBounds: [number, number];
+  priceRange: [number, number];
+  setPriceRange: (value: [number, number]) => void;
+  activeOccasions: Set<ProductOccasion>;
+  toggleOccasion: (occasion: ProductOccasion) => void;
+}
+
+function FilterPanel({
+  availableCategories,
+  activeCategories,
+  toggleCategory,
+  priceBounds,
+  priceRange,
+  setPriceRange,
+  activeOccasions,
+  toggleOccasion,
+}: FilterState) {
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
+          Kategori
+        </h2>
+        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 lg:flex-col">
+          {availableCategories.map((cat) => (
+            <label
+              key={cat}
+              className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-green-700"
+            >
+              <input
+                type="checkbox"
+                checked={activeCategories.has(cat)}
+                onChange={() => toggleCategory(cat)}
+                className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-orange-300"
+              />
+              {CATEGORY_LABELS[cat]}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
+          Harga (per unit)
+        </h2>
+        <div className="mt-4">
+          <PriceRangeFilter
+            min={priceBounds[0]}
+            max={priceBounds[1]}
+            value={priceRange}
+            onChange={setPriceRange}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
+          Occasion
+        </h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {OCCASION_ORDER.map((occasion) => {
+            const active = activeOccasions.has(occasion);
+            return (
+              <button
+                key={occasion}
+                type="button"
+                onClick={() => toggleOccasion(occasion)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors duration-fast",
+                  active
+                    ? "border-green-600 bg-green-600 text-cream-50"
+                    : "border-green-200 text-green-700 hover:bg-green-50",
+                )}
+              >
+                {OCCASION_LABELS[occasion]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileFilterSheet({
+  open,
+  onClose,
+  filterState,
+}: {
+  open: boolean;
+  onClose: () => void;
+  filterState: FilterState;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-40 bg-green-900/40 backdrop-blur-sm lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+          />
+          <motion.div
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl bg-cream-50 shadow-2xl lg:hidden"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ duration: 0.3, ease: [0.65, 0, 0.35, 1] }}
+          >
+            <div className="flex shrink-0 items-center justify-between border-b border-green-100 px-6 py-4">
+              <span className="font-heading text-lg font-semibold text-green-700">Filter</span>
+              <button
+                type="button"
+                aria-label="Tutup filter"
+                onClick={onClose}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-green-700 hover:bg-green-50"
+              >
+                <X className="h-5 w-5" strokeWidth={1.5} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+              <FilterPanel {...filterState} />
+            </div>
+            <div className="shrink-0 border-t border-green-100 p-4">
+              <Button type="button" variant="primary" onClick={onClose} className="w-full">
+                Terapkan Filter
+              </Button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>,
+    document.body,
+  );
+}
+
 export function CatalogGrid({ products }: { products: Product[] }) {
   const availableCategories = CATEGORY_ORDER.filter((cat) =>
     products.some((p) => p.category === cat),
@@ -162,6 +316,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
   );
   const [activeOccasions, setActiveOccasions] = useState<Set<ProductOccasion>>(() => new Set());
   const [sortBy, setSortBy] = useState<SortOption>("popular");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const priceBounds = useMemo<[number, number]>(() => {
     if (products.length === 0) return [0, 0];
@@ -221,85 +376,74 @@ export function CatalogGrid({ products }: { products: Product[] }) {
     return sorted;
   }, [products, activeCategories, activeOccasions, priceRange, sortBy]);
 
+  const hasActiveFilters =
+    activeCategories.size < availableCategories.length ||
+    activeOccasions.size > 0 ||
+    priceRange[0] > priceBounds[0] ||
+    priceRange[1] < priceBounds[1];
+
   if (availableCategories.length === 0) {
     return (
       <p className="py-16 text-center text-green-700/60">Menu belum tersedia — segera hadir.</p>
     );
   }
 
+  const filterState: FilterState = {
+    availableCategories,
+    activeCategories,
+    toggleCategory,
+    priceBounds,
+    priceRange,
+    setPriceRange,
+    activeOccasions,
+    toggleOccasion,
+  };
+
   return (
     <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-      <aside className="space-y-8 lg:sticky lg:top-24 lg:h-fit">
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
-            Kategori
-          </h2>
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 lg:flex-col">
-            {availableCategories.map((cat) => (
-              <label
-                key={cat}
-                className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-green-700"
-              >
-                <input
-                  type="checkbox"
-                  checked={activeCategories.has(cat)}
-                  onChange={() => toggleCategory(cat)}
-                  className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-orange-300"
-                />
-                {CATEGORY_LABELS[cat]}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
-            Harga (per unit)
-          </h2>
-          <div className="mt-4">
-            <PriceRangeFilter
-              min={priceBounds[0]}
-              max={priceBounds[1]}
-              value={priceRange}
-              onChange={setPriceRange}
-            />
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-green-500">
-            Occasion
-          </h2>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {OCCASION_ORDER.map((occasion) => {
-              const active = activeOccasions.has(occasion);
-              return (
-                <button
-                  key={occasion}
-                  type="button"
-                  onClick={() => toggleOccasion(occasion)}
-                  className={cn(
-                    "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors duration-fast",
-                    active
-                      ? "border-green-600 bg-green-600 text-cream-50"
-                      : "border-green-200 text-green-700 hover:bg-green-50",
-                  )}
-                >
-                  {OCCASION_LABELS[occasion]}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      <aside className="hidden lg:block lg:sticky lg:top-24 lg:h-fit">
+        <FilterPanel {...filterState} />
       </aside>
 
       <div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-green-100 pb-4">
+        {/* Mobile: baris ringkas Filter + Urutkan (bukan filter penuh di awal halaman) —
+            filter lengkap dibuka lewat bottom sheet, mengikuti pola e-commerce besar. */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen(true)}
+            className={cn(
+              "relative flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium",
+              hasActiveFilters
+                ? "border-green-600 bg-green-600 text-cream-50"
+                : "border-green-200 text-green-700",
+            )}
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={2} />
+            Filter
+            {hasActiveFilters && (
+              <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-orange-400" />
+            )}
+          </button>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="flex-1 rounded-full border border-green-200 bg-cream-50 px-4 py-2 text-sm text-green-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            {Object.entries(SORT_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                Urutkan: {label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-b border-green-100 pb-4 lg:mt-0">
           <p className="text-sm text-green-700/70">
             Menampilkan <span className="font-semibold text-green-700">{filtered.length}</span>{" "}
             dari {products.length} menu
           </p>
-          <label className="flex items-center gap-2 text-sm text-green-700">
+          <label className="hidden items-center gap-2 text-sm text-green-700 lg:flex">
             Urutkan
             <select
               value={sortBy}
@@ -320,13 +464,19 @@ export function CatalogGrid({ products }: { products: Product[] }) {
             Tidak ada menu yang cocok dengan filter ini.
           </p>
         ) : (
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6 xl:grid-cols-3">
             {filtered.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}
       </div>
+
+      <MobileFilterSheet
+        open={mobileFiltersOpen}
+        onClose={() => setMobileFiltersOpen(false)}
+        filterState={filterState}
+      />
     </div>
   );
 }

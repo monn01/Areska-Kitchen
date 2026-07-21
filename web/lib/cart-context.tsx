@@ -23,6 +23,11 @@ interface CartContextValue {
    * keranjang "kosong" (mis. redirect di halaman checkout), supaya tidak salah redirect
    * saat item aslinya masih ada tapi belum sempat ter-load. */
   isHydrated: boolean;
+  /** State drawer keranjang di-share lewat context (bukan local state di CartButton) supaya
+   * lebih dari satu tempat (header, tab bar mobile) bisa buka drawer yang sama. */
+  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -31,6 +36,7 @@ const STORAGE_KEY = "areska-cart";
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -89,6 +95,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         subtotal,
         itemCount,
         isHydrated: hydrated,
+        isCartOpen,
+        openCart: () => setIsCartOpen(true),
+        closeCart: () => setIsCartOpen(false),
       }}
     >
       {children}

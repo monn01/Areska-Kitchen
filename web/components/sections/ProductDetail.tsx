@@ -39,7 +39,7 @@ export function ProductDetail({
   const total = product.price * quantity;
 
   return (
-    <div className="mx-auto max-w-container px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+    <div className="mx-auto max-w-container px-4 pb-28 pt-10 sm:px-6 sm:pt-12 lg:px-8 lg:pb-12">
       <Link
         href="/katalog"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 hover:underline"
@@ -74,7 +74,7 @@ export function ProductDetail({
               <h2 className="font-heading text-lg font-semibold text-green-700">
                 Menu Lainnya dari {CATEGORY_LABELS[product.category]}
               </h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 {relatedProducts.map((p) => (
                   <Link
                     key={p.id}
@@ -101,7 +101,7 @@ export function ProductDetail({
           )}
         </div>
 
-        <div className="h-fit rounded-2xl border border-green-100 bg-cream-50 p-6 lg:sticky lg:top-24">
+        <div className="hidden h-fit rounded-2xl border border-green-100 bg-cream-50 p-6 lg:block lg:sticky lg:top-24">
           <p className="text-xs uppercase tracking-wide text-green-500">Harga per Unit</p>
           <p className="mt-1 font-heading text-2xl font-semibold text-green-700">
             Rp {product.price.toLocaleString("id-ID")}
@@ -160,6 +160,43 @@ export function ProductDetail({
             Konsultasi via WhatsApp
           </Button>
         </div>
+      </div>
+
+      {/* Mobile only: bar tetap terlihat di bawah layar tanpa perlu discroll — pengganti
+          kartu sidebar yang di desktop letaknya di kolom kanan. */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-green-100 bg-cream-50/95 p-3 backdrop-blur-md lg:hidden"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+      >
+        <div className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            aria-label="Kurangi jumlah"
+            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-green-200 text-green-700 hover:bg-green-50"
+          >
+            <Minus className="h-3.5 w-3.5" strokeWidth={2} />
+          </button>
+          <span className="w-6 text-center text-sm font-semibold text-green-700">{quantity}</span>
+          <button
+            type="button"
+            aria-label="Tambah jumlah"
+            onClick={() => setQuantity((q) => q + 1)}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-green-200 text-green-700 hover:bg-green-50"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+          </button>
+        </div>
+        <Button type="button" variant="primary" onClick={handleAdd} className="flex-1 gap-2">
+          {added ? (
+            <>
+              <Check className="h-4 w-4" strokeWidth={2.5} />
+              Ditambahkan
+            </>
+          ) : (
+            `Tambah — Rp ${total.toLocaleString("id-ID")}`
+          )}
+        </Button>
       </div>
     </div>
   );

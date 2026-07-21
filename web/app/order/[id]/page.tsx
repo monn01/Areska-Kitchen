@@ -6,6 +6,7 @@ import { STATUS_LABELS } from "@/lib/order-status";
 import { buildWhatsAppLink } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { MinimalHeader } from "@/components/ui/MinimalHeader";
+import { MobileTabBar } from "@/components/ui/MobileTabBar";
 import { RetryPaymentButton } from "@/components/checkout/RetryPaymentButton";
 
 export default async function OrderConfirmationPage({
@@ -22,7 +23,7 @@ export default async function OrderConfirmationPage({
   const needsManualReview = order.isCustomEvent || order.deliveryLat == null;
 
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="min-h-screen bg-cream-100 pb-16 lg:pb-0">
       <MinimalHeader />
       <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="rounded-2xl bg-cream-50 p-8 text-center shadow-[0_2px_12px_rgba(31,77,58,0.08)]">
@@ -119,6 +120,8 @@ export default async function OrderConfirmationPage({
           </p>
         </div>
       </div>
+
+      <MobileTabBar />
     </div>
   );
 }

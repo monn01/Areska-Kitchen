@@ -10,24 +10,24 @@ import { Button } from "@/components/ui/Button";
 import { useCart } from "@/lib/cart-context";
 
 export function CartButton() {
-  const { items, itemCount, subtotal, updateQuantity, removeItem } = useCart();
-  const [open, setOpen] = useState(false);
+  const { items, itemCount, subtotal, updateQuantity, removeItem, isCartOpen, openCart, closeCart } =
+    useCart();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => setMounted(true), []);
 
   function goToCheckout() {
-    setOpen(false);
+    closeCart();
     router.push("/checkout");
   }
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    document.body.style.overflow = isCartOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [open]);
+  }, [isCartOpen]);
 
   return (
     <>
@@ -38,7 +38,7 @@ export function CartButton() {
         whileTap={{ scale: 0.9 }}
         transition={{ duration: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
         className="relative flex h-11 w-11 items-center justify-center rounded-full text-green-700 hover:bg-green-50"
-        onClick={() => setOpen(true)}
+        onClick={openCart}
       >
         <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
         {itemCount > 0 && (
@@ -56,7 +56,7 @@ export function CartButton() {
       {mounted &&
         createPortal(
           <AnimatePresence>
-            {open && (
+            {isCartOpen && (
               <>
                 <motion.div
                   className="fixed inset-0 z-40 bg-green-900/40 backdrop-blur-sm"
@@ -64,7 +64,7 @@ export function CartButton() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  onClick={() => setOpen(false)}
+                  onClick={closeCart}
                 />
                 <motion.div
                   className="fixed inset-y-0 right-0 z-50 flex w-[90%] max-w-md flex-col bg-cream-50 shadow-2xl"
@@ -81,7 +81,7 @@ export function CartButton() {
                       type="button"
                       aria-label="Tutup keranjang"
                       className="flex h-11 w-11 items-center justify-center rounded-full text-green-700 hover:bg-green-50"
-                      onClick={() => setOpen(false)}
+                      onClick={closeCart}
                     >
                       <X className="h-6 w-6" strokeWidth={1.5} />
                     </button>
