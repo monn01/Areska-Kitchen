@@ -6,6 +6,12 @@ import { Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+// motion.create(Link) langsung, bukan <motion.span><Link/></motion.span> — bungkus span
+// tanpa lebar eksplisit itu shrink-to-fit, jadi class seperti "w-full" yang nempel di
+// <Link> di dalamnya tidak pernah benar-benar melebar mengikuti parent (beda perilaku
+// dari cabang link eksternal di bawah yang tidak punya wrapper tambahan sama sekali).
+const MotionLink = motion.create(Link);
+
 type Variant = "primary" | "secondary" | "ghost";
 
 interface BaseProps {
@@ -100,15 +106,15 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         );
       }
       return (
-        <motion.span {...motionProps} className="inline-block">
-          <Link
-            href={href}
-            onClick={onClick}
-            className={cn(baseClasses, variantClasses[variant], className)}
-          >
-            {children}
-          </Link>
-        </motion.span>
+        <MotionLink
+          ref={ref as React.Ref<HTMLAnchorElement>}
+          href={href}
+          onClick={onClick}
+          className={cn(baseClasses, variantClasses[variant], className)}
+          {...motionProps}
+        >
+          {children}
+        </MotionLink>
       );
     }
 

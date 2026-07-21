@@ -173,12 +173,12 @@ export function Navbar() {
               rel="noopener noreferrer"
               variant="secondary"
               confirmBeforeNavigate
-              className="gap-1.5"
+              className="gap-1.5 px-5 py-2 text-sm"
             >
               <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
               Chat WhatsApp
             </Button>
-            <Button href="/katalog" variant="primary" className="gap-1.5">
+            <Button href="/katalog" variant="primary" className="gap-1.5 px-5 py-2 text-sm">
               <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
               Pesan Online
             </Button>

@@ -72,7 +72,7 @@ export function Hero() {
           </motion.p>
           <motion.div variants={item} className="mt-8 flex flex-wrap items-center gap-4">
             <Magnetic className="inline-block">
-              <Button href="/katalog" variant="primary">
+              <Button href="/katalog" variant="primary" className="px-5 py-2 text-sm">
                 Pesan Online
               </Button>
             </Magnetic>
@@ -82,6 +82,7 @@ export function Hero() {
               rel="noopener noreferrer"
               variant="secondary"
               confirmBeforeNavigate
+              className="px-5 py-2 text-sm"
             >
               Chat WhatsApp
             </Button>
