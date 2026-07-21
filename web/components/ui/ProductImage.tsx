@@ -15,13 +15,15 @@ export function ProductImage({
     return (
       <div
         className={cn(
-          "relative flex flex-col items-center justify-center gap-2 overflow-hidden bg-green-50",
+          "relative flex flex-col items-center justify-center gap-1 overflow-hidden bg-green-50 p-1",
           className,
         )}
       >
         <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-        <ImageOff className="h-8 w-8 text-green-300" strokeWidth={1.5} />
-        <span className="text-xs font-medium text-green-500">Foto segera hadir</span>
+        <ImageOff className="h-5 w-5 shrink-0 text-green-300" strokeWidth={1.5} />
+        <span className="text-center text-[10px] leading-tight font-medium text-green-500">
+          Foto segera hadir
+        </span>
       </div>
     );
   }

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { useCart } from "@/lib/cart-context";
 import {
   createOrder,
@@ -24,7 +25,7 @@ function tomorrowISODate() {
 }
 
 export function CheckoutForm() {
-  const { items, subtotal, clearCart, isHydrated } = useCart();
+  const { items, subtotal, clearCart, isHydrated, updateQuantity, removeItem } = useCart();
   const router = useRouter();
 
   const [customerName, setCustomerName] = useState("");
@@ -153,7 +154,7 @@ export function CheckoutForm() {
   return (
     <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div className="space-y-6">
-        <div className="rounded-2xl bg-cream-50 p-6 shadow-[0_2px_12px_rgba(31,77,58,0.08)]">
+        <div className="rounded-2xl border border-green-100 bg-cream-50 p-6">
           <h2 className="font-heading text-lg font-semibold text-green-700">Info Pelanggan</h2>
           <div className="mt-4 space-y-4">
             <div>
@@ -184,7 +185,7 @@ export function CheckoutForm() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-cream-50 p-6 shadow-[0_2px_12px_rgba(31,77,58,0.08)]">
+        <div className="rounded-2xl border border-green-100 bg-cream-50 p-6">
           <h2 className="font-heading text-lg font-semibold text-green-700">
             Alamat & Lokasi Pengiriman
           </h2>
@@ -241,7 +242,7 @@ export function CheckoutForm() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-cream-50 p-6 shadow-[0_2px_12px_rgba(31,77,58,0.08)]">
+        <div className="rounded-2xl border border-green-100 bg-cream-50 p-6">
           <h2 className="font-heading text-lg font-semibold text-green-700">
             Jadwal Pengantaran
           </h2>
@@ -295,15 +296,52 @@ export function CheckoutForm() {
         </div>
       </div>
 
-      <div className="h-fit space-y-4 rounded-2xl bg-cream-50 p-6 shadow-[0_2px_12px_rgba(31,77,58,0.08)] lg:sticky lg:top-24">
+      <div className="h-fit space-y-4 rounded-2xl border border-green-100 bg-cream-50 p-6 lg:sticky lg:top-24">
         <h2 className="font-heading text-lg font-semibold text-green-700">Ringkasan Pesanan</h2>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {items.map((item) => (
-            <div key={item.productId} className="flex justify-between text-sm text-green-700/80">
-              <span>
-                {item.name} x{item.quantity}
+            <div key={item.productId} className="flex gap-3">
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl">
+                <ProductImage src={item.imageUrl} alt={item.name} className="h-full w-full" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-green-700">{item.name}</p>
+                <p className="text-xs text-green-700/60">
+                  Rp {item.price.toLocaleString("id-ID")}
+                </p>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="Kurangi jumlah"
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-green-200 text-green-700 hover:bg-green-50"
+                    onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                  >
+                    <Minus className="h-3 w-3" strokeWidth={2} />
+                  </button>
+                  <span className="w-5 text-center text-xs font-medium text-green-700">
+                    {item.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Tambah jumlah"
+                    className="flex h-6 w-6 items-center justify-center rounded-full border border-green-200 text-green-700 hover:bg-green-50"
+                    onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                  >
+                    <Plus className="h-3 w-3" strokeWidth={2} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Hapus ${item.name} dari keranjang`}
+                    className="ml-auto text-[#B3432E] hover:underline"
+                    onClick={() => removeItem(item.productId)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  </button>
+                </div>
+              </div>
+              <span className="shrink-0 text-sm font-semibold text-green-700">
+                Rp {(item.price * item.quantity).toLocaleString("id-ID")}
               </span>
-              <span>Rp {(item.price * item.quantity).toLocaleString("id-ID")}</span>
             </div>
           ))}
         </div>

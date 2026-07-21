@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Check, Plus } from "lucide-react";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { CATEGORY_ORDER, CATEGORY_LABELS } from "@/lib/product-categories";
@@ -20,7 +21,9 @@ function AddToCartButton({ product }: { product: Product }) {
   const { addItem } = useCart();
   const [justAdded, setJustAdded] = useState(false);
 
-  function handleAdd() {
+  function handleAdd(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
     addItem({
       productId: product.id,
       name: product.name,
@@ -50,7 +53,9 @@ function AddToCartButton({ product }: { product: Product }) {
 
 function ProductCard({ product }: { product: Product }) {
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-2xl bg-cream-50 shadow-[0_2px_12px_rgba(31,77,58,0.08)] transition-shadow duration-base hover:shadow-[0_10px_28px_rgba(31,77,58,0.16)]">
+    <Link
+      href={`/katalog/${product.id}`}
+      className="group flex h-full flex-col overflow-hidden rounded-2xl bg-cream-50 shadow-[0_2px_12px_rgba(31,77,58,0.08)] transition-shadow duration-base hover:shadow-[0_10px_28px_rgba(31,77,58,0.16)]">
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         <ProductImage
           src={product.imageUrl}
@@ -81,7 +86,7 @@ function ProductCard({ product }: { product: Product }) {
           <AddToCartButton product={product} />
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

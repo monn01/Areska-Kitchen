@@ -245,7 +245,15 @@ User eksplisit menyebut UI katalog "paling jelek yang pernah dilihat" dan member
 - [x] `app/checkout/page.tsx` — sentuhan ringan mengikuti gaya baru: link "← Kembali ke Katalog" ditambahkan, heading diperbesar; logika `CheckoutForm.tsx` tidak diubah (sudah cukup dekat dengan struktur referensi Figma: daftar item + form jadwal/alamat + ringkasan pesanan)
 - [x] Diverifikasi via browser (bukan cuma curl): mask foto Hero, layout bento "Paket Populer", section "Cara Pemesanan", gerbang login blur di `/katalog` (masih berfungsi normal), login pakai akun demo → filter kategori & badge Populer tampil benar, tambah ke keranjang → badge count di header update → drawer keranjang solid & berfungsi → checkout menampilkan item & ringkasan dengan benar. `tsc --noEmit`/`next lint` bersih di setiap langkah.
 
-### Phase 16 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
+### Phase 16 — Halaman Detail Produk & Penguatan Checkout (Figma: Daftar Menu, Detail Menu, Checkout) ✅ selesai 21 Juli 2026
+User minta kembali ke referensi Figma dan kali ini terapkan ketiga frame-nya (Daftar Menu, Detail Menu, Checkout) ke sistem e-commerce, bukan cuma Daftar Menu seperti Phase 15. Prinsip yang sama dipertahankan: struktur/layout diikuti, data palsu (level pedas, harga bertingkat per-pax, sertifikasi halal — semua ada di frame "Detail Menu" Figma tapi tidak ada model data aslinya) **tidak** dibuat.
+- [x] **Halaman baru** `app/katalog/[id]/page.tsx` + `components/sections/ProductDetail.tsx` — fitur yang sebelumnya tidak ada sama sekali (klik produk sebelumnya cuma bisa tambah-keranjang langsung dari grid, tidak ada halaman detail). Berisi: gambar besar + badge Populer, kategori, nama, deskripsi, stepper jumlah pesanan, estimasi total, tombol "Tambahkan ke Keranjang" (pakai `useCart().addItem` yang sama) dan "Konsultasi via WhatsApp", serta "Menu Lainnya dari [kategori]" (related products asli dari kategori sama, bukan galeri multi-foto palsu — foto asli cuma 1 per produk)
+- [x] `components/sections/CatalogGrid.tsx` — kartu produk sekarang bisa diklik ke halaman detail (`Link` membungkus seluruh kartu); tombol "+" tetap quick-add tanpa pindah halaman (`e.preventDefault()`/`stopPropagation()`)
+- [x] `components/checkout/CheckoutForm.tsx` diperkuat (bukan cuma sentuhan ringan lagi) — sesuai referensi Figma "Checkout": daftar item di Ringkasan Pesanan sekarang tampilkan gambar produk + stepper jumlah (+/-) + tombol hapus langsung (pakai `updateQuantity`/`removeItem` yang sudah ada di `useCart`, bukan logic baru), bukan cuma teks nama x qty statis. Semua kartu diganti dari shadow tebal jadi border tipis (`border border-green-100`) mengikuti gaya Figma. Logika submit/state form sama sekali tidak diubah — pelajaran dari revisi Hero sebelumnya (jangan restrukturisasi saat cuma diminta penguatan visual)
+- [x] **Perbaikan kecil ditemukan saat verifikasi**: `ProductImage.tsx` fallback ("Foto segera hadir") awalnya didesain untuk kartu besar (~280px+), jadi terlihat sesak saat dipakai di thumbnail 64px (keranjang & checkout) — ikon & teks fallback diperkecil (`h-5 w-5`, `text-[10px]`) supaya proporsional di kedua ukuran
+- [x] Diverifikasi lewat browser: klik kartu di katalog → halaman detail tampil benar (gambar, badge, related products dari kategori sama) → ubah jumlah & tambah ke keranjang → badge count naik → checkout menampilkan item dengan gambar+stepper+harga yang benar dan bisa diubah langsung dari situ. `tsc --noEmit`/`next lint` bersih.
+
+### Phase 17 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
 - [x] `tsc --noEmit` dan `next lint` bersih di setiap tahap (Phase 4-11)
 - [x] Smoke test dasar: server boot bersih tanpa error, route inti (`/`, `/checkout`, `/admin`, `/account`, `/admin/login`, `/account/login`, `/account/register`) merespons kode HTTP yang benar (200 untuk publik, 307 redirect untuk yang terproteksi tanpa sesi), konten dari database (produk/testimoni/dipercaya-oleh) terverifikasi tampil di homepage
 - [ ] **(instruksi user, berlaku mulai sesi ini)**: verifikasi fitur secara penuh di browser (klik-per-klik alur order, admin CRUD, dst.) dilakukan oleh user sendiri, bukan lewat automation tool — lebih cepat, dan feedback datang langsung dari pengguna nyata alih-alih tool otomasi yang beberapa kali kena kendala teknis di sesi-sesi sebelumnya
@@ -254,7 +262,7 @@ User eksplisit menyebut UI katalog "paling jelek yang pernah dilihat" dan member
 - [ ] Security review: verifikasi signature webhook (sudah diimplementasi, perlu dites dengan transaksi sandbox asli), proteksi route admin/account, tidak ada data kartu tersimpan sendiri (PCI-DSS via Midtrans)
 - [ ] Test responsive mobile untuk seluruh flow baru (checkout, keranjang, admin)
 
-### Phase 17 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
+### Phase 18 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
 - [ ] Hosting final: **Vercel (app) + Neon (Postgres)** — konsisten dengan keputusan Phase 1
 - [ ] Setup domain (masih pending dari Fase 1 — `.id`/`.co.id`/`.com`)
 - [ ] Migrasi Midtrans dari sandbox ke production keys
@@ -441,6 +449,16 @@ Sesi ini dua bagian:
 - Checkout dapat sentuhan ringan (link kembali, heading lebih besar) tanpa ubah logika
 
 Diverifikasi lewat browser (bukan cuma curl) karena perubahan visualnya besar: mask Hero, bento Paket Populer, Cara Pemesanan, gerbang login blur di katalog (masih jalan normal), login akun demo → filter & badge tampil benar → tambah keranjang → badge count update → drawer solid → checkout tampil benar. `tsc`/`lint` bersih di semua langkah. Migrasi Prisma baru (`isPopular`) diterapkan sama seperti pola Sesi 5 (`migrate diff` + `migrate deploy` manual, `migrate dev` tidak jalan non-interaktif di shell ini).
+
+### 21 Juli 2026 — Sesi 7 (Revisi Hero yang kebablasan, foto Hero HD, halaman Detail Produk + checkout diperkuat dari Figma)
+
+Tiga bagian singkat:
+
+1. **Koreksi overreach**: diminta menambah sedikit ruang bawah Hero, Claude malah merestrukturisasi jadi `min-h-screen` + grid + mengecilkan kolom teks + mengubah lebar/mask gambar — badge dari foto jadi tumpang tindih dengan teks, tipografi berantakan. User menghentikan langsung ("kau bahkan merusak typografinya"). Diperbaiki dengan `git checkout --` balik ke commit terakhir yang baik, lalu cuma satu baris diubah (`lg:pb-0` → `lg:pb-12`). Pelajaran: [[feedback_scope_discipline]] — permintaan tweak kecil dijawab dengan edit minimal, bukan restrukturisasi.
+2. **Foto Hero diganti versi HD**: resolusi lama (1866×843) terlihat pecah di layar besar/retina — tidak ada alat AI upscaling di environment ini untuk memperbaikinya secara sintetis. User sendiri yang menyediakan ulang foto resolusi tinggi (3216×1686, ~4x piksel), langsung dipasang menggantikan `hero-banner.png` lama tanpa perlu ubah kode (cuma ganti file, komposisi sama).
+3. **Detail Menu & Checkout dari Figma**: sebelumnya cuma frame "Daftar Menu" yang diterapkan penuh (Phase 15) — sekarang "Detail Menu" (halaman baru `/katalog/[id]`, fitur yang belum pernah ada) dan "Checkout" (diperkuat: gambar+stepper di ringkasan pesanan, bukan cuma sentuhan ringan) ikut diterapkan. Konsisten dengan prinsip anti-data-palsu: level pedas/harga bertingkat/sertifikasi halal dari Figma tidak dibuat karena tidak ada data aslinya.
+
+Diverifikasi lewat browser di setiap langkah (bukan cuma curl/tsc), termasuk zoom-in untuk cek ketajaman foto Hero setelah diganti HD. `tsc`/`lint` bersih.
 
 ---
 
