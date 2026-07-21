@@ -1,7 +1,16 @@
 import Link from "next/link";
-import { Plus, ArrowRight, BookOpen, CalendarDays, Truck } from "lucide-react";
+import {
+  Plus,
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  Truck,
+  ChefHat,
+  UtensilsCrossed,
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { DrawLine } from "@/components/ui/DrawLine";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { buildWhatsAppLink, cn } from "@/lib/utils";
 import type { Product } from "@prisma/client";
@@ -182,30 +191,41 @@ export async function MenuCta() {
             </p>
           </ScrollReveal>
 
-          <div className="relative mt-12 grid gap-10 sm:grid-cols-3 sm:gap-6">
-            <div
+          <div className="relative mt-12 overflow-hidden rounded-3xl border border-green-100 bg-cream-100/50 px-6 py-14 sm:px-12">
+            {/* Ilustrasi dekoratif elegan (outline, sangat redup) — cuma pengisi visual,
+                bukan elemen interaktif, jadi aman dirender di Server Component ini. */}
+            <UtensilsCrossed
               aria-hidden="true"
-              className="absolute left-0 right-0 top-8 hidden h-px bg-green-100 sm:block"
-              style={{ marginInline: "16.66%" }}
+              className="pointer-events-none absolute -left-8 -top-10 h-40 w-40 rotate-[-12deg] text-green-600/[0.06] sm:h-48 sm:w-48"
+              strokeWidth={1}
             />
-            {ORDER_STEPS.map((step, i) => (
-              <ScrollReveal
-                key={step.title}
-                variant="fade-up"
-                delay={i * 0.1}
-                className="relative flex flex-col items-center text-center"
-              >
-                <span className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-green-200 bg-cream-50 text-green-600">
-                  <step.icon className="h-7 w-7" strokeWidth={1.5} />
-                </span>
-                <h4 className="mt-4 font-heading text-lg font-semibold text-green-700">
-                  {step.title}
-                </h4>
-                <p className="mt-1.5 max-w-[220px] text-sm leading-relaxed text-green-700/70">
-                  {step.description}
-                </p>
-              </ScrollReveal>
-            ))}
+            <ChefHat
+              aria-hidden="true"
+              className="pointer-events-none absolute -bottom-10 -right-8 h-44 w-44 rotate-[10deg] text-orange-500/[0.08] sm:h-52 sm:w-52"
+              strokeWidth={1}
+            />
+
+            <div className="relative grid gap-10 sm:grid-cols-3 sm:gap-6">
+              <DrawLine className="pointer-events-none absolute inset-x-[16.66%] top-8 hidden h-0.5 rounded-full bg-gradient-to-r from-orange-400 to-green-500 sm:block" />
+              {ORDER_STEPS.map((step, i) => (
+                <ScrollReveal
+                  key={step.title}
+                  variant="fade-up"
+                  delay={i * 0.1}
+                  className="relative flex flex-col items-center text-center"
+                >
+                  <span className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-green-200 bg-cream-50 text-green-600 shadow-sm">
+                    <step.icon className="h-7 w-7" strokeWidth={1.5} />
+                  </span>
+                  <h4 className="mt-4 font-heading text-lg font-semibold text-green-700">
+                    {step.title}
+                  </h4>
+                  <p className="mt-1.5 max-w-[220px] text-sm leading-relaxed text-green-700/70">
+                    {step.description}
+                  </p>
+                </ScrollReveal>
+              ))}
+            </div>
           </div>
         </div>
       </div>

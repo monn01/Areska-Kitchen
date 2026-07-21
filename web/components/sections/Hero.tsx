@@ -53,7 +53,7 @@ export function Hero() {
   return (
     <section
       id="beranda"
-      className="relative overflow-hidden bg-cream-100 pt-32 pb-20 sm:pt-40 sm:pb-28 lg:pb-0"
+      className="relative overflow-hidden bg-cream-100 pt-24 pb-20 sm:pt-28 sm:pb-28 lg:pb-0"
     >
       {/* Desktop only: foto bleed ke tepi kanan/atas/bawah section (bukan kartu terpisah),
           memudar ke background cream lewat mask di sisi kiri — sesuai referensi
@@ -69,7 +69,7 @@ export function Hero() {
           fill
           priority
           sizes="56vw"
-          className="object-cover object-[68%_50%]"
+          className="object-cover object-[100%_58%]"
         />
       </div>
 
@@ -135,16 +135,8 @@ export function Hero() {
           }}
           className="relative mt-10 lg:hidden"
         >
-          <TiltCard maxTilt={5} liftScale={1.02}>
-            <div
-              style={{
-                maskImage:
-                  "radial-gradient(ellipse 72% 72% at 50% 50%, black 60%, transparent 100%)",
-                WebkitMaskImage:
-                  "radial-gradient(ellipse 72% 72% at 50% 50%, black 60%, transparent 100%)",
-              }}
-              className="relative aspect-[4/3] w-full"
-            >
+          <TiltCard maxTilt={5} liftScale={1.02} className="rounded-3xl">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-[0_20px_60px_rgba(31,77,58,0.18)]">
               <Image
                 src="/assets/hero/nasi-kotak-open.jpg"
                 alt="Nasi kotak Areska Kitchen dengan lauk ayam, sambal kacang, dan sayur"
