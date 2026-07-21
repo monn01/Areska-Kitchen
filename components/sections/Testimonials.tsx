@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Quote } from "lucide-react";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { testimonials } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -43,39 +44,41 @@ export function Testimonials() {
   return (
     <section id="testimoni" className="bg-cream-100 py-20 sm:py-28">
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <ScrollReveal variant="fade-down" className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
             Testimoni
           </p>
           <h2 className="mt-3 font-heading text-3xl font-semibold text-green-700 sm:text-4xl">
             Apa Kata Pelanggan Kami
           </h2>
-        </div>
+        </ScrollReveal>
 
-        <div
-          ref={trackRef}
-          onPointerDown={() => (pausedRef.current = true)}
-          onPointerUp={() => (pausedRef.current = false)}
-          onMouseEnter={() => (pausedRef.current = true)}
-          onMouseLeave={() => (pausedRef.current = false)}
-          className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {testimonials.map((t) => (
-            <div
-              key={t.id}
-              className="flex w-full shrink-0 snap-center justify-center px-2"
-            >
-              <div className="max-w-2xl rounded-3xl bg-cream-50 p-8 text-center shadow-[0_8px_30px_rgba(31,77,58,0.08)] sm:p-12">
-                <Quote className="mx-auto h-8 w-8 text-orange-400" strokeWidth={1.5} />
-                <p className="mt-4 font-heading text-xl italic leading-relaxed text-green-700 sm:text-2xl">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <p className="mt-6 font-semibold text-green-700">{t.name}</p>
-                <p className="text-sm text-green-500">{t.role}</p>
+        <ScrollReveal variant="scale" delay={0.1}>
+          <div
+            ref={trackRef}
+            onPointerDown={() => (pausedRef.current = true)}
+            onPointerUp={() => (pausedRef.current = false)}
+            onMouseEnter={() => (pausedRef.current = true)}
+            onMouseLeave={() => (pausedRef.current = false)}
+            className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {testimonials.map((t) => (
+              <div
+                key={t.id}
+                className="flex w-full shrink-0 snap-center justify-center px-2"
+              >
+                <div className="max-w-2xl rounded-3xl bg-cream-50 p-8 text-center shadow-[0_8px_30px_rgba(31,77,58,0.08)] sm:p-12">
+                  <Quote className="mx-auto h-8 w-8 text-orange-400" strokeWidth={1.5} />
+                  <p className="mt-4 font-heading text-xl italic leading-relaxed text-green-700 sm:text-2xl">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <p className="mt-6 font-semibold text-green-700">{t.name}</p>
+                  <p className="text-sm text-green-500">{t.role}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollReveal>
 
         <div className="mt-6 flex justify-center">
           {testimonials.map((t, i) => (

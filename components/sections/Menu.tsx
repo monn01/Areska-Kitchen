@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ProductImage } from "@/components/ui/ProductImage";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { menuCategories, menuItems, type MenuCategory } from "@/lib/data";
 import { buildWhatsAppLink } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ export function Menu() {
   return (
     <section id="menu" className="bg-cream-50 py-20 sm:py-28">
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <ScrollReveal variant="fade-up" className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
             Menu Kami
           </p>
@@ -28,9 +29,13 @@ export function Menu() {
             Harga di bawah adalah kisaran — harga final dikonfirmasi melalui
             WhatsApp sesuai jumlah pesanan dan kebutuhan acara Anda.
           </p>
-        </div>
+        </ScrollReveal>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-2 border-b border-green-100">
+        <ScrollReveal
+          variant="fade-up"
+          delay={0.1}
+          className="mt-10 flex flex-wrap justify-center gap-2 border-b border-green-100"
+        >
           {menuCategories.map((category) => (
             <button
               key={category}
@@ -55,7 +60,7 @@ export function Menu() {
               )}
             </button>
           ))}
-        </div>
+        </ScrollReveal>
 
         <AnimatePresence mode="wait">
           <motion.div

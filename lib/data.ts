@@ -161,17 +161,30 @@ export const testimonials: Testimonial[] = [
   },
 ];
 
-export interface TrustedClientType {
+export interface TrustedBrand {
   id: string;
-  label: string;
+  /** Label chip — generik/ilustratif per kategori, BUKAN nama resmi satu instansi (izin belum didapat, lihat PRD §16.1 & TASKPLAN.md checklist klien). */
+  name: string;
+  /** null = belum ada logo asli, tampilkan fallback monogram (lihat TrustedBy.tsx). */
+  logoUrl: string | null;
+  /** Baris marquee tempat chip ini tampil — field ini yang nanti diekspos ke admin dashboard (Fase 2/3) untuk diatur ulang. */
+  row: 1 | 2;
 }
 
-// Fallback teks tanpa logo — izin resmi nama/logo instansi belum didapat (PRD §16.1, DESIGN.md §4.5).
-export const trustedClientTypes: TrustedClientType[] = [
-  { id: "gov", label: "Instansi Pemerintah Provinsi" },
-  { id: "bapeda", label: "Kantor Provinsi Bangka Belitung" },
-  { id: "schools", label: "Sekolah-sekolah di Pangkalpinang" },
-  { id: "public", label: "Acara Formal & Non-formal Masyarakat Umum" },
+// Placeholder ilustratif per kategori — daftar & logo instansi resmi menyusul setelah izin didapat dari klien.
+export const trustedBrands: TrustedBrand[] = [
+  { id: "b1", name: "Instansi Pemerintah Kota", logoUrl: null, row: 1 },
+  { id: "b2", name: "Kantor Kecamatan", logoUrl: null, row: 1 },
+  { id: "b3", name: "Sekolah Negeri", logoUrl: null, row: 1 },
+  { id: "b4", name: "Universitas / Kampus", logoUrl: null, row: 1 },
+  { id: "b5", name: "Rumah Sakit Daerah", logoUrl: null, row: 1 },
+  { id: "b6", name: "Kantor Swasta", logoUrl: null, row: 1 },
+  { id: "b7", name: "Yayasan Sosial", logoUrl: null, row: 2 },
+  { id: "b8", name: "Puskesmas Kota", logoUrl: null, row: 2 },
+  { id: "b9", name: "Sekolah Swasta", logoUrl: null, row: 2 },
+  { id: "b10", name: "Acara Keluarga & Komunitas", logoUrl: null, row: 2 },
+  { id: "b11", name: "Kantor Kelurahan", logoUrl: null, row: 2 },
+  { id: "b12", name: "Organisasi Masyarakat", logoUrl: null, row: 2 },
 ];
 
 export const businessInfo = {

@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { Home, Leaf, ShieldCheck, Heart, type LucideIcon } from "lucide-react";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { trustIndicators } from "@/lib/data";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -21,11 +22,10 @@ export function TrustIndicators() {
           {trustIndicators.map((indicator, i) => {
             const Icon = ICONS[indicator.id] ?? Home;
             return (
-              <motion.div
+              <ScrollReveal
                 key={indicator.id}
-                initial={{ opacity: shouldReduceMotion ? 1 : 0, y: shouldReduceMotion ? 0 : 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: shouldReduceMotion ? 0 : 0.6 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                variant="fade-up"
+                delay={i * 0.08}
                 className="group flex flex-col items-center gap-3 text-center"
               >
                 <motion.div
@@ -41,7 +41,7 @@ export function TrustIndicators() {
                     {indicator.description}
                   </p>
                 </div>
-              </motion.div>
+              </ScrollReveal>
             );
           })}
         </div>

@@ -92,9 +92,19 @@ const config: Config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        "marquee-left": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "marquee-right": {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         shimmer: "shimmer 2.2s infinite",
+        "marquee-left": "marquee-left 32s linear infinite",
+        "marquee-right": "marquee-right 32s linear infinite",
       },
     },
   },

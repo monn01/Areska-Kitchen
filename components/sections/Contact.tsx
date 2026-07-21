@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { MapPin, Clock, Send } from "lucide-react";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { businessInfo } from "@/lib/data";
 import { buildWhatsAppLink, cn } from "@/lib/utils";
 
@@ -89,14 +90,14 @@ export function Contact() {
   return (
     <section id="kontak" className="bg-cream-50 py-20 sm:py-28">
       <div className="mx-auto max-w-container px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <ScrollReveal variant="fade-up" className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-green-500">
             Kontak
           </p>
           <h2 className="mt-3 font-heading text-3xl font-semibold text-green-700 sm:text-4xl">
             Hubungi Kami
           </h2>
-        </div>
+        </ScrollReveal>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-16">
           <div>

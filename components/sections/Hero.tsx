@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Magnetic } from "@/components/ui/Magnetic";
+import { TiltCard } from "@/components/ui/TiltCard";
 import { buildWhatsAppLink, DEFAULT_WA_MESSAGE } from "@/lib/utils";
 
 export function Hero() {
@@ -97,24 +98,28 @@ export function Hero() {
           transition={{ duration: shouldReduceMotion ? 0 : 0.7, delay: shouldReduceMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="relative"
         >
-          <motion.div
-            ref={imageRef}
-            style={isDesktop && !shouldReduceMotion ? { y: parallaxY } : undefined}
-            className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-[0_20px_60px_rgba(31,77,58,0.18)]"
-          >
-            <Image
-              src="/assets/hero/nasi-kotak-open.jpg"
-              alt="Nasi kotak Areska Kitchen dengan lauk ayam, sambal kacang, dan sayur"
-              fill
-              priority
-              sizes="(min-width: 1024px) 560px, 100vw"
-              className="object-cover"
-            />
-          </motion.div>
+          <TiltCard maxTilt={5} liftScale={1.02} className="rounded-3xl">
+            <motion.div
+              ref={imageRef}
+              style={isDesktop && !shouldReduceMotion ? { y: parallaxY } : undefined}
+              className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-[0_20px_60px_rgba(31,77,58,0.18)]"
+            >
+              <Image
+                src="/assets/hero/nasi-kotak-open.jpg"
+                alt="Nasi kotak Areska Kitchen dengan lauk ayam, sambal kacang, dan sayur"
+                fill
+                priority
+                sizes="(min-width: 1024px) 560px, 100vw"
+                className="object-cover"
+              />
+            </motion.div>
+          </TiltCard>
 
           <motion.div
             animate={shouldReduceMotion ? undefined : { scale: [1, 1.03, 1] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             className="absolute -bottom-6 -left-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-600 text-center shadow-lg sm:h-28 sm:w-28"
           >
             <span className="text-xs font-semibold leading-tight text-cream-50 sm:text-sm">
