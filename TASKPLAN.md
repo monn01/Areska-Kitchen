@@ -136,13 +136,16 @@ Sama seperti Fase 1: checklist `[ ]`/`[x]`, task **(butuh input klien)** untuk y
 - [x] Dashboard admin placeholder (`app/admin/page.tsx`) + tombol logout, keduanya diverifikasi end-to-end via browser (login sukses → dashboard, login gagal → pesan error, logout → balik ke login, akses langsung tanpa sesi → redirect)
 - [ ] Akun pelanggan (keputusan final 21 Juli 2026: **guest checkout + opsional akun**) — checkout tanpa daftar tetap bisa (retail: nasi kotak/snack box), tapi pelanggan juga bisa daftar akun untuk riwayat order otomatis tersimpan — dikerjakan di Phase 8
 
-### Phase 3 — Dashboard Admin: Manajemen Konten
-- [ ] Layout admin (sidebar/nav terpisah dari landing page, bukan bagian dari navbar publik)
-- [ ] Halaman login admin
-- [ ] CRUD Produk (nama, kategori, deskripsi, harga, foto — upload gambar, toggle aktif/nonaktif)
-- [ ] CRUD Testimoni (ganti placeholder statis dari Fase 1 jadi dikelola dari sini)
-- [ ] CRUD "Dipercaya Oleh" (nama instansi, logo, baris 1/2, toggle tampil) — **ini yang disebut user di Fase 1 sesi sebelumnya ("bisa diatur di dashboard admin nantinya")**, komponen tampilan (marquee, `TiltCard`) sudah siap, tinggal disambungkan ke data dinamis
-- [ ] List & detail order masuk (lihat semua order, filter by status)
+### Phase 3 — Dashboard Admin: Manajemen Konten ✅ selesai 21 Juli 2026
+- [x] Layout admin dengan sidebar (`app/admin/(dashboard)/layout.tsx`, route group supaya halaman login tidak ikut memakai shell sidebar)
+- [x] Halaman login admin (selesai di Phase 2)
+- [x] CRUD Produk (`lib/actions/products.ts` + `components/admin/ProductForm.tsx`) — nama, kategori, deskripsi, harga, URL gambar, toggle aktif. Upload gambar langsung **belum tersedia** — admin isi URL gambar yang sudah di-hosting di tempat lain (Cloudinary/Google Drive/dst); upload file asli butuh layanan storage terpisah (mis. Vercel Blob) yang belum di-setup, jadi sengaja disederhanakan dulu
+- [x] CRUD Testimoni (`lib/actions/testimonials.ts` + `components/admin/TestimonialForm.tsx`) — ganti placeholder statis Fase 1
+- [x] CRUD "Dipercaya Oleh" (`lib/actions/trusted-clients.ts` + `components/admin/ClientForm.tsx`) — nama, URL logo, baris 1/2, toggle tampil. **Ini yang disebut user di Fase 1 sesi sebelumnya** ("bisa diatur di dashboard admin nantinya") — komponen tampilan (marquee, `TiltCard`) dari Phase 11 sekarang tersambung ke data dinamis
+- [x] List & detail order masuk (`app/admin/(dashboard)/orders/`) — read-only dengan filter status untuk Phase 3 ini; aksi ubah status (konfirmasi manual order custom/event) sengaja ditunda ke Phase 7 sesuai scope breakdown, belum ada order asli sampai Phase 5 (checkout) selesai
+- Setiap Server Action diberi lapisan proteksi sendiri (`requireAdmin()` di `lib/auth.ts`) — tidak cuma andalkan middleware, karena Server Action punya endpoint sendiri yang bisa dipanggil langsung
+- **Bug ditemukan & diperbaiki saat testing**: scroll wheel di atas input harga (`type="number"`) yang sedang fokus mengubah nilainya tanpa sengaja (kuirk browser bawaan HTML). Fix: `onWheel={(e) => e.currentTarget.blur()}` di `ProductForm.tsx`
+- Diverifikasi end-to-end via browser: tambah/edit produk berhasil (termasuk cek data tersimpan benar di tabel), semua halaman list (Produk, Testimoni, Dipercaya Oleh, Order) menampilkan data seed dengan benar, dashboard menampilkan angka statistik akurat. Tombol Hapus tidak dites lewat automation (pakai `confirm()` native yang nge-block tool CDP — aman untuk user asli, cuma tidak kompatibel dengan automation sesi ini), diverifikasi lewat code review saja
 
 ### Phase 4 — Katalog Publik Dinamis
 - [ ] Ganti `menuItems`/`trustIndicators`/`testimonials`/`trustedBrands` statis di `lib/data.ts` jadi query database (Server Component)

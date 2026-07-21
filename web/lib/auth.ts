@@ -1,4 +1,5 @@
 import type { AuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -52,3 +53,16 @@ export const authOptions: AuthOptions = {
     },
   },
 };
+
+/**
+ * Pertahanan berlapis untuk Server Actions — middleware sudah melindungi navigasi halaman
+ * /admin/*, tapi Server Action punya endpoint sendiri, jadi setiap action yang mengubah data
+ * WAJIB verifikasi sesi admin sendiri, jangan cuma andalkan middleware.
+ */
+export async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.isAdmin) {
+    throw new Error("Unauthorized");
+  }
+  return session;
+}

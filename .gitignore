@@ -1,5 +1,6 @@
-# Claude Code local settings (machine-specific, not project source)
+# Claude Code local settings & session state (machine/session-specific, not project source)
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 # OS junk
 .DS_Store
