@@ -275,7 +275,13 @@ Diskusi dulu sebelum dikerjakan (user tanya pendapat soal navigasi keluar dari a
 - [x] `components/account/ProfileForm.tsx` (baru) — foto profil (dengan preview), nama, email, nomor WA, tanggal lahir (opsional), jenis kelamin (opsional), semua bisa diedit dari `/account`. Foto profil juga ditampilkan di header sapaan halaman akun
 - [x] Diverifikasi: data ke-fetch & tampil benar dari database (foto, tanggal lahir, jenis kelamin), lapisan Prisma/skema dites langsung (query update manual) karena tool otomasi browser sempat tidak konsisten saat mengetik ke salah satu field — pola form itu sendiri sudah identik dengan form lain yang sudah terbukti jalan. `tsc --noEmit`/`next lint` bersih.
 
-### Phase 20 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
+### Phase 20 — Upload Foto Profil, Posisi Shortcut Header, Dropdown Urutkan Custom ✅ selesai 21 Juli 2026
+- [x] **Foto profil sekarang upload file asli** (PNG/JPEG, maks 5MB), bukan tempel URL — di-resize & dikompres di browser (canvas, sisi terpanjang 256px, JPEG kuality 0.85) jadi data URI kecil (~20-70KB), disimpan langsung di `User.avatarUrl` sebagai string. Sengaja begini (bukan layanan upload/storage baru seperti Cloudinary/S3) supaya tidak nambah infrastruktur/biaya baru dan tetap jalan di deployment manapun (termasuk serverless) — konsisten dengan pola "hindari infra baru kalau ada alternatif gratis" yang sudah dipakai di proyek ini (Haversine vs Google Maps, wa.me manual vs WhatsApp Business API). Validasi ukuran juga di server (maks ~700KB base64) sebagai lapisan kedua, tidak cuma percaya batasan di sisi browser
+- [x] `MinimalHeader.tsx` — shortcut "Beranda" dipindah dari tengah navbar ke sebelah ikon akun/keranjang (user: "merusak pemandangan" kalau di tengah)
+- [x] Dropdown "Urutkan" di katalog (`CatalogGrid.tsx`) diganti dari `<select>` native (tampilannya "hamburger" bawaan OS, tidak match tema) jadi komponen custom (`SortDropdown`) — tombol bertema + panel pilihan dengan style situs sendiri, dipakai di baris ringkas mobile maupun baris desktop
+- [x] Diverifikasi lewat browser: upload file asli via `file_upload` tool (bukan cuma baca kode) → preview & simpan sukses, foto tampil di header sapaan; dropdown Urutkan custom dites klik-pilih, grid ke-sort ulang dengan benar. `tsc --noEmit`/`next lint` bersih.
+
+### Phase 21 — Testing & QA (sebagian — verifikasi manual di tangan user mulai sekarang)
 - [x] `tsc --noEmit` dan `next lint` bersih di setiap tahap (Phase 4-11)
 - [x] Smoke test dasar: server boot bersih tanpa error, route inti (`/`, `/checkout`, `/admin`, `/account`, `/admin/login`, `/account/login`, `/account/register`) merespons kode HTTP yang benar (200 untuk publik, 307 redirect untuk yang terproteksi tanpa sesi), konten dari database (produk/testimoni/dipercaya-oleh) terverifikasi tampil di homepage
 - [ ] **(instruksi user, berlaku mulai sesi ini)**: verifikasi fitur secara penuh di browser (klik-per-klik alur order, admin CRUD, dst.) dilakukan oleh user sendiri, bukan lewat automation tool — lebih cepat, dan feedback datang langsung dari pengguna nyata alih-alih tool otomasi yang beberapa kali kena kendala teknis di sesi-sesi sebelumnya
@@ -284,7 +290,7 @@ Diskusi dulu sebelum dikerjakan (user tanya pendapat soal navigasi keluar dari a
 - [ ] Security review: verifikasi signature webhook (sudah diimplementasi, perlu dites dengan transaksi sandbox asli), proteksi route admin/account, tidak ada data kartu tersimpan sendiri (PCI-DSS via Midtrans)
 - [ ] Test responsive mobile untuk seluruh flow baru (checkout, keranjang, admin)
 
-### Phase 21 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
+### Phase 22 — Deployment (dikerjakan setelah SEMUA kode Fase 1 + Fase 2 selesai, sesuai arahan user)
 - [ ] Hosting final: **Vercel (app) + Neon (Postgres)** — konsisten dengan keputusan Phase 1
 - [ ] Setup domain (masih pending dari Fase 1 — `.id`/`.co.id`/`.com`)
 - [ ] Migrasi Midtrans dari sandbox ke production keys

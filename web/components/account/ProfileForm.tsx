@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +10,46 @@ import type { User } from "@prisma/client";
 const inputClass =
   "w-full rounded-xl border border-green-200 bg-cream-50 px-4 py-2.5 text-green-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-orange-300";
 const labelClass = "mb-1.5 block text-sm font-medium text-green-700";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB — sebelum dikompres
+const AVATAR_DIMENSION = 256; // px, sisi terpanjang setelah di-resize
+
+/** Resize + kompres gambar di browser jadi data URI JPEG kecil — tidak butuh storage/upload
+ * server sendiri (belum ada infrastrukturnya), cukup disimpan sebagai string di User.avatarUrl. */
+function resizeImageFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height) {
+          if (width > AVATAR_DIMENSION) {
+            height = Math.round(height * (AVATAR_DIMENSION / width));
+            width = AVATAR_DIMENSION;
+          }
+        } else if (height > AVATAR_DIMENSION) {
+          width = Math.round(width * (AVATAR_DIMENSION / height));
+          height = AVATAR_DIMENSION;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Canvas tidak didukung browser ini"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = () => reject(new Error("Gagal memuat gambar"));
+      img.src = reader.result as string;
+    };
+    reader.onerror = () => reject(new Error("Gagal membaca file"));
+    reader.readAsDataURL(file);
+  });
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -23,36 +63,74 @@ function SubmitButton() {
 export function ProfileForm({ user }: { user: User }) {
   const [state, formAction] = useFormState<ProfileFormState, FormData>(updateProfile, {});
   const [avatarPreview, setAvatarPreview] = useState(user.avatarUrl ?? "");
+  const [fileError, setFileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      setFileError("Hanya file PNG atau JPEG yang didukung.");
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError("Ukuran file maksimal 5MB.");
+      return;
+    }
+
+    setFileError(null);
+    try {
+      const dataUrl = await resizeImageFile(file);
+      setAvatarPreview(dataUrl);
+    } catch {
+      setFileError("Gagal memproses gambar, coba file lain.");
+    }
+  }
+
+  function handleRemovePhoto() {
+    setAvatarPreview("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   return (
     <form action={formAction} className="space-y-5">
+      <input type="hidden" name="avatarUrl" value={avatarPreview} />
+
       <div className="flex items-center gap-4">
         <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-green-50">
           {avatarPreview ? (
-            // eslint-disable-next-line @next/next/no-img-element -- URL bebas dari user, bukan aset lokal terdaftar
-            <img
-              src={avatarPreview}
-              alt="Foto profil"
-              className="h-full w-full object-cover"
-              onError={() => setAvatarPreview("")}
-            />
+            // eslint-disable-next-line @next/next/no-img-element -- data URI hasil resize, bukan aset next/image
+            <img src={avatarPreview} alt="Foto profil" className="h-full w-full object-cover" />
           ) : (
             <ImageOff className="h-6 w-6 text-green-300" strokeWidth={1.5} />
           )}
         </div>
         <div className="flex-1">
-          <label htmlFor="avatarUrl" className={labelClass}>
-            URL Foto Profil (opsional)
+          <label htmlFor="avatarFile" className={labelClass}>
+            Foto Profil (opsional)
           </label>
-          <input
-            id="avatarUrl"
-            name="avatarUrl"
-            type="url"
-            placeholder="https://..."
-            defaultValue={user.avatarUrl ?? ""}
-            onChange={(e) => setAvatarPreview(e.target.value)}
-            className={inputClass}
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              ref={fileInputRef}
+              id="avatarFile"
+              type="file"
+              accept="image/png,image/jpeg"
+              onChange={handleFileChange}
+              className="block w-full max-w-xs text-sm text-green-700 file:mr-3 file:rounded-full file:border-0 file:bg-green-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-cream-50 hover:file:bg-green-700"
+            />
+            {avatarPreview && (
+              <button
+                type="button"
+                onClick={handleRemovePhoto}
+                className="text-sm font-medium text-[#B3432E] hover:underline"
+              >
+                Hapus Foto
+              </button>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-green-700/60">Format PNG/JPEG, maksimal 5MB.</p>
+          {fileError && <p className="mt-1 text-xs text-[#B3432E]">{fileError}</p>}
         </div>
       </div>
 

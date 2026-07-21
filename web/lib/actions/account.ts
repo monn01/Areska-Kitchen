@@ -127,7 +127,14 @@ const profileSchema = z
     phone: z
       .union([z.string().trim().min(8, "Nomor WhatsApp tidak valid"), z.literal("")])
       .optional(),
-    avatarUrl: z.union([z.string().trim().url("URL foto tidak valid"), z.literal("")]).optional(),
+    /// Data URI base64 hasil upload (diproses/dikompresi di browser, lihat ProfileForm.tsx) —
+    /// bukan URL biasa, jadi divalidasi manual (bukan z.string().url()).
+    avatarUrl: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || v.startsWith("data:image/"), "Format foto tidak valid")
+      .refine((v) => v.length <= 700_000, "Ukuran foto terlalu besar, coba unggah ulang")
+      .optional(),
     dateOfBirth: z.union([z.string().trim(), z.literal("")]).optional(),
     gender: z.union([z.enum(["MALE", "FEMALE"]), z.literal("")]).optional(),
   })

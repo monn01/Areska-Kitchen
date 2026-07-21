@@ -22,17 +22,17 @@ export function MinimalHeader() {
           </span>
         </Link>
 
-        {/* Shortcut balik ke landing page — cuma desktop, mobile sudah punya tab "Beranda"
-            di MobileTabBar jadi tidak perlu didobel di sini. */}
-        <Link
-          href="/"
-          className="hidden items-center gap-1.5 text-sm font-medium text-green-700/70 hover:text-green-700 lg:flex"
-        >
-          <Home className="h-4 w-4" strokeWidth={1.5} />
-          Beranda
-        </Link>
-
-        <div className="flex items-center">
+        <div className="flex items-center gap-1">
+          {/* Shortcut balik ke landing page — cuma desktop, mobile sudah punya tab "Beranda"
+              di MobileTabBar jadi tidak perlu didobel di sini. Ditaruh dekat ikon akun/keranjang
+              (bukan di tengah navbar) supaya tidak mengganggu keseimbangan header. */}
+          <Link
+            href="/"
+            className="mr-2 hidden items-center gap-1.5 text-sm font-medium text-green-700/70 hover:text-green-700 lg:flex"
+          >
+            <Home className="h-4 w-4" strokeWidth={1.5} />
+            Beranda
+          </Link>
           <Link
             href="/account"
             aria-label="Akun saya"

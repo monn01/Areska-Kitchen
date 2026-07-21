@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Plus, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronDown, Plus, SlidersHorizontal, X } from "lucide-react";
 import { ProductImage } from "@/components/ui/ProductImage";
 import { Button } from "@/components/ui/Button";
 import {
@@ -248,6 +248,63 @@ function FilterPanel({
   );
 }
 
+function SortDropdown({
+  value,
+  onChange,
+  className,
+}: {
+  value: SortOption;
+  onChange: (value: SortOption) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className={cn("relative", className)}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-2 rounded-full border border-green-200 bg-cream-50 px-4 py-2 text-sm text-green-700 hover:border-green-400"
+      >
+        <span className="truncate">{SORT_LABELS[value]}</span>
+        <ChevronDown
+          className={cn("h-4 w-4 shrink-0 transition-transform duration-fast", open && "rotate-180")}
+          strokeWidth={2}
+        />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-xl border border-green-100 bg-cream-50 py-1 shadow-[0_8px_24px_rgba(31,77,58,0.14)]">
+          {Object.entries(SORT_LABELS).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                onChange(key as SortOption);
+                setOpen(false);
+              }}
+              className={cn(
+                "block w-full px-4 py-2 text-left text-sm transition-colors duration-fast hover:bg-green-50",
+                key === value ? "font-semibold text-green-700" : "text-green-700/80",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MobileFilterSheet({
   open,
   onClose,
@@ -425,17 +482,7 @@ export function CatalogGrid({ products }: { products: Product[] }) {
               <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-orange-400" />
             )}
           </button>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="flex-1 rounded-full border border-green-200 bg-cream-50 px-4 py-2 text-sm text-green-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-orange-300"
-          >
-            {Object.entries(SORT_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                Urutkan: {label}
-              </option>
-            ))}
-          </select>
+          <SortDropdown value={sortBy} onChange={setSortBy} className="flex-1" />
         </div>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-b border-green-100 pb-4 lg:mt-0">
@@ -443,20 +490,10 @@ export function CatalogGrid({ products }: { products: Product[] }) {
             Menampilkan <span className="font-semibold text-green-700">{filtered.length}</span>{" "}
             dari {products.length} menu
           </p>
-          <label className="hidden items-center gap-2 text-sm text-green-700 lg:flex">
+          <div className="hidden items-center gap-2 text-sm text-green-700 lg:flex">
             Urutkan
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="rounded-lg border border-green-200 bg-cream-50 px-3 py-1.5 text-sm text-green-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-orange-300"
-            >
-              {Object.entries(SORT_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+            <SortDropdown value={sortBy} onChange={setSortBy} className="w-44" />
+          </div>
         </div>
 
         {filtered.length === 0 ? (
