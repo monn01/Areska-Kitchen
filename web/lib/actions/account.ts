@@ -75,8 +75,13 @@ export async function registerUser(input: {
 
 const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
 
-/** Selalu balas sukses generik (tidak bocorkan apakah email terdaftar) — mencegah user enumeration. */
-export async function requestPasswordReset(email: string): Promise<{ success: true }> {
+/** Selalu balas sukses generik (tidak bocorkan apakah email terdaftar) — mencegah user enumeration.
+ * `portal` cuma menentukan halaman reset mana yang dituju di link email (dipakai bareng oleh
+ * pelanggan & admin, sama-sama akun di tabel User) — bukan pembeda hak akses. */
+export async function requestPasswordReset(
+  email: string,
+  portal: "account" | "admin" = "account",
+): Promise<{ success: true }> {
   const user = await prisma.user.findUnique({ where: { email: email.trim() } });
 
   if (user) {
@@ -86,7 +91,8 @@ export async function requestPasswordReset(email: string): Promise<{ success: tr
       data: { userId: user.id, token, expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS) },
     });
 
-    const resetUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/account/reset-password?token=${token}`;
+    const portalParam = portal === "admin" ? "&portal=admin" : "";
+    const resetUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/account/reset-password?token=${token}${portalParam}`;
     await sendPasswordResetEmail(email.trim(), resetUrl);
   }
 

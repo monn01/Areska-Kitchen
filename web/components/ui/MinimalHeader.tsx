@@ -33,10 +33,12 @@ export function MinimalHeader() {
             <Home className="h-4 w-4" strokeWidth={1.5} />
             Beranda
           </Link>
+          {/* Mobile sudah punya tab "Akun" di MobileTabBar — ikon ini didobel di sana,
+              jadi cuma tampil di desktop. */}
           <Link
             href="/account"
             aria-label="Akun saya"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-green-700 hover:bg-green-50"
+            className="hidden h-11 w-11 items-center justify-center rounded-full text-green-700 hover:bg-green-50 lg:flex"
           >
             <User className="h-5 w-5" strokeWidth={1.5} />
           </Link>

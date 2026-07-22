@@ -24,7 +24,7 @@ function tomorrowISODate() {
   return d.toISOString().slice(0, 10);
 }
 
-export function CheckoutForm() {
+export function CheckoutForm({ userId }: { userId?: string }) {
   const { items, subtotal, clearCart, isHydrated, updateQuantity, removeItem } = useCart();
   const router = useRouter();
 
@@ -116,6 +116,7 @@ export function CheckoutForm() {
       deliveryTime,
       notes,
       voucherCode: voucherStatus.valid ? voucherCode : undefined,
+      userId,
     });
 
     setSubmitting(false);

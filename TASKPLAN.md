@@ -298,6 +298,19 @@ Diskusi dulu sebelum dikerjakan (user tanya pendapat soal navigasi keluar dari a
 - [ ] Deploy Fase 1 (landing page, sekarang dengan katalog dinamis) + Fase 2 (ordering) sekaligus
 - [ ] Final review bareng orang tua sebelum go-live
 
+### Phase 23 — Bug Order-Akun, Notifikasi Order Masuk, & Rombak Login Admin ✅ selesai 21 Juli 2026
+- [x] **Bug fix kritis**: order dari checkout tidak pernah tersimpan dengan `userId` — `CheckoutForm.tsx` tidak pernah mengirim field ini ke `createOrder()` walau usernya sedang login, jadi order tidak pernah muncul di "Riwayat Pesanan" akun. Diperbaiki: `app/checkout/page.tsx` jadi Server Component yang ambil sesi lalu diteruskan sebagai prop `userId` ke `CheckoutForm`. **Order yang sudah terlanjur dibuat sebelum fix ini tetap tidak tertaut ke akun** (butuh migrasi data manual per kasus kalau user minta)
+- [x] Badge jumlah order berstatus "Menunggu" di menu "Order" sidebar admin (`components/admin/OrderNotificationBadge.tsx`) — dihitung server-side saat load, lalu polling ringan tiap 20 detik lewat server action `getPendingOrderCount` (`lib/actions/orders.ts`)
+- [x] Bunyi notifikasi saat ada order baru masuk (badge bertambah) — dibangkitkan langsung lewat Web Audio API (chime dua nada), bukan file audio, supaya tidak nambah aset baru. Catatan: kebijakan autoplay browser bisa menahan bunyi sampai admin berinteraksi dulu dengan halaman; badge angka tetap jadi sumber kebenaran independen dari itu
+- [x] Notifikasi status order ke pelanggan dikonfirmasi **sudah ada** sejak Phase 8 (`OrderStatusControls.tsx` — tombol "Kirim Notifikasi WhatsApp" pakai `wa.me` pre-filled, dikirim manual oleh admin, gratis tanpa API berbayar) — cuma perlu didokumentasikan ulang, tidak ada fitur baru di titik ini
+- [x] Dropdown "Jenis Kelamin" di form profil pelanggan (`ProfileForm.tsx`) diganti dari `<select>` native jadi komponen custom bertema situs (pola sama seperti `SortDropdown` Phase 20)
+- [x] Ikon profil dobel di tampilan mobile katalog/akun — ikon akun di `MinimalHeader.tsx` disembunyikan di breakpoint mobile (`hidden lg:flex`) karena tab "Akun" di `MobileTabBar` sudah mewakilinya; desktop tidak berubah (tidak ada bottom tab bar di sana)
+- [x] Rombak tampilan `/admin/login`: identitas visual admin dibedakan dari login pelanggan (gradient hijau tua, badge ikon shield) tapi tetap satu palet warna situs, plus animasi masuk (fade + slide + scale, `framer-motion`, pola aman mount-triggered bukan conditional-undefined)
+- [x] Fitur **lupa password untuk admin** — halaman baru `/admin/forgot-password`, pakai ulang server action `requestPasswordReset` yang sudah ada (Phase 2) dengan parameter `portal: "admin"` baru supaya link di email & alur redirect setelah reset mengarah balik ke `/admin/login`, bukan `/account/login`. Halaman `/account/reset-password` tetap satu halaman bersama (baca query `?portal=admin`) — tidak duplikasi halaman reset
+- [x] `middleware.ts` — matcher `/admin/*` diperluas mengecualikan `forgot-password` juga (sebelumnya cuma `login`), supaya halaman ini tidak ikut kena gerbang auth admin
+- [x] Animasi saat masuk ke dashboard admin — `components/admin/DashboardEntrance.tsx`, sidebar slide-in dari kiri + konten utama fade-up dengan delay singkat, main sekali saat layout dashboard pertama kali dipasang (tidak replay tiap pindah halaman dalam admin karena layout persisten di App Router)
+- [x] `tsc --noEmit` dan `next lint` bersih di setiap langkah; route baru (`/admin/login`, `/admin/forgot-password`, `/admin`) dicek respons HTTP via curl
+
 ---
 
 ## Keputusan Arsitektur Fase 2 (final, dikonfirmasi 21 Juli 2026)
@@ -333,6 +346,21 @@ Fitur bernomor (#3, #10, #11, #12, #13, #14, #15) merujuk ke daftar referensi us
 
 *(Detail task breakdown menyusul setelah Fase 2 punya data transaksi riil)*
 
+### Keputusan arsitektur (disempurnakan 21 Juli 2026, sebelum breakdown detail)
+
+Dashboard admin (`/admin`) akan dipecah jadi **dua mode/opsi** yang dipilih dari titik masuk yang sama, bukan dua aplikasi terpisah:
+
+1. **Kontrol Menu & Website** — semua yang sudah dibangun di Fase 2 Phase 3 (produk, testimoni, dipercaya oleh, order, voucher, pengaturan toko/ongkir/cutoff). Tidak ada perubahan fungsional dari yang sudah ada, cuma dikelompokkan sebagai satu "mode" begitu mode kedua di bawah ini mulai dibangun.
+2. **Kontrol Keuangan** (Fase 3 asli, roadmap di bawah ini) — modal, biaya operasional, laba kotor/bersih, laporan periodik. Mode ini butuh data model & halaman baru, belum ada kode sama sekali.
+
+Implikasi teknis (dicatat sekarang, dieksekusi saat breakdown detail Fase 3 dimulai):
+- Sidebar `app/admin/(dashboard)/layout.tsx` kemungkinan perlu selector mode di bagian atas (mis. tab/segmented control "Menu & Website" vs "Keuangan"), yang menentukan set `NAV_ITEMS` mana yang tampil — bukan dua route group `(dashboard)` terpisah, supaya sesi login & komponen bersama (`LogoutButton`, `DashboardEntrance`, dll) tetap satu
+- Proteksi akses: untuk versi awal, admin yang sama (`isAdmin: true`) berhak ke kedua mode — pemisahan hak akses granular (mis. staf dapur cuma boleh "Menu & Website", pemilik saja yang boleh "Keuangan") **belum diputuskan**, jadi dicatat sebagai pertanyaan terbuka ke user sebelum implementasi, bukan diasumsikan
+- Data statistik penjualan sederhana yang sudah ada di dashboard home (Fase 2 Phase 11, Analitik) tetap di mode "Menu & Website" — perhitungan modal/biaya/laba bersih baru masuk mode "Keuangan", supaya tidak duplikasi (konsisten dengan keputusan awal di tabel "Keputusan Arsitektur Fase 2" baris Analitik #14)
+
+### Task breakdown (belum dieksekusi — menunggu Fase 2 selesai + data transaksi riil)
+
+- [ ] Desain selector mode dashboard ("Menu & Website" vs "Keuangan") di `app/admin/(dashboard)/layout.tsx`
 - [ ] Desain data model `FinancialRecord` (modal, biaya operasional, periode)
 - [ ] Build kalkulasi otomatis laba kotor (dari data `Transaction` Fase 2)
 - [ ] Build input manual biaya operasional (listrik, gas, transport, dll)
@@ -487,6 +515,19 @@ Tiga bagian singkat:
 3. **Detail Menu & Checkout dari Figma**: sebelumnya cuma frame "Daftar Menu" yang diterapkan penuh (Phase 15) — sekarang "Detail Menu" (halaman baru `/katalog/[id]`, fitur yang belum pernah ada) dan "Checkout" (diperkuat: gambar+stepper di ringkasan pesanan, bukan cuma sentuhan ringan) ikut diterapkan. Konsisten dengan prinsip anti-data-palsu: level pedas/harga bertingkat/sertifikasi halal dari Figma tidak dibuat karena tidak ada data aslinya.
 
 Diverifikasi lewat browser di setiap langkah (bukan cuma curl/tsc), termasuk zoom-in untuk cek ketajaman foto Hero setelah diganti HD. `tsc`/`lint` bersih.
+
+### 21 Juli 2026 — Sesi 8 (Bug order-akun, notifikasi order masuk, dan rombak login admin)
+
+Empat laporan/permintaan terpisah dari user dalam satu sesi, ditangani berurutan (lihat detail penuh di checklist Phase 23 di atas):
+
+1. **Ikon profil dobel di mobile** — ikon akun di header atas (`MinimalHeader.tsx`) disembunyikan di breakpoint mobile karena tab "Akun" di bottom tab bar sudah mewakilinya.
+2. **User lapor "data saya tidak masuk riwayat pesanan"** — ditelusuri, ternyata bug nyata: `CheckoutForm.tsx` tidak pernah mengirim `userId` ke `createOrder()` walau user sedang login, jadi order tersimpan tanpa tertaut akun. Diperbaiki dengan menjadikan `app/checkout/page.tsx` Server Component yang meneruskan sesi sebagai prop. **Catatan penting**: order yang sudah terlanjur dibuat sebelum fix ini tetap tidak tertaut ke akun manapun (perlu migrasi data manual per kasus kalau user memintanya nanti).
+3. **User tanya soal notifikasi status order ke pelanggan** — ditemukan fitur ini **sudah ada** sejak Phase 8 (`OrderStatusControls.tsx`, tombol "Kirim Notifikasi WhatsApp" dengan `wa.me` pre-filled, dikirim manual oleh admin, gratis). User lanjut minta **badge jumlah order "Menunggu" + bunyi notifikasi** di sidebar admin — keduanya ditambahkan (`OrderNotificationBadge.tsx`, polling 20 detik + chime Web Audio API tanpa file audio baru).
+4. **Rombak login admin**: tampilan `/admin/login` diberi identitas visual berbeda dari login pelanggan (gradient hijau tua + badge shield) plus animasi masuk; ditambah fitur lupa password admin (`/admin/forgot-password`, pakai ulang `requestPasswordReset` dengan parameter `portal` baru supaya redirect balik ke login admin, bukan login pelanggan); ditambah animasi mount saat pertama masuk dashboard (`DashboardEntrance.tsx`, sidebar slide-in + konten fade-up, sekali saja per sesi login karena layout persisten).
+
+**Keputusan arsitektur Fase 3 disempurnakan** (bukan implementasi, cuma perencanaan): user menegaskan dashboard admin nantinya punya dua mode — "Kontrol Menu & Website" (semua yang sudah ada) dan "Kontrol Keuangan" (Fase 3 asli, belum dibangun). Detail keputusan & pertanyaan terbuka (mis. apakah hak akses kedua mode perlu dipisah per role) dicatat di bagian "FASE 3" di atas, dieksekusi nanti setelah Fase 2 benar-benar selesai dan ada data transaksi riil untuk diuji.
+
+`tsc --noEmit` dan `next lint` bersih di setiap langkah; rute baru dicek respons HTTP via curl (bukan klik-per-klik browser, sesuai instruksi user sejak Sesi 3 bahwa verifikasi visual jadi tanggung jawab user sendiri).
 
 ---
 

@@ -10,7 +10,10 @@ import {
   Settings,
 } from "lucide-react";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { LogoutButton } from "@/components/admin/LogoutButton";
+import { OrderNotificationBadge } from "@/components/admin/OrderNotificationBadge";
+import { DashboardEntrance } from "@/components/admin/DashboardEntrance";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -28,40 +31,50 @@ export default async function AdminDashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
+  const pendingOrderCount = await prisma.order.count({ where: { status: "PENDING" } });
 
   return (
     <div className="min-h-screen bg-cream-100 lg:flex">
       <aside className="border-b border-green-100 bg-cream-50 lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r">
-        <div className="flex items-center justify-between px-6 py-5 lg:block">
-          <div>
-            <p className="font-heading text-lg font-semibold text-green-600">Areska Kitchen</p>
-            <p className="text-xs text-green-700/60">{session?.user?.name}</p>
+        <DashboardEntrance x={-16}>
+          <div className="flex items-center justify-between px-6 py-5 lg:block">
+            <div>
+              <p className="font-heading text-lg font-semibold text-green-600">Areska Kitchen</p>
+              <p className="text-xs text-green-700/60">{session?.user?.name}</p>
+            </div>
+            <div className="lg:hidden">
+              <LogoutButton />
+            </div>
           </div>
-          <div className="lg:hidden">
+          <nav className="flex gap-1 overflow-x-auto px-4 pb-4 lg:flex-col lg:px-4">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-green-700/80 hover:bg-green-50 hover:text-green-700"
+                >
+                  <Icon className="h-4 w-4" strokeWidth={1.5} />
+                  {item.label}
+                  {item.href === "/admin/orders" && (
+                    <OrderNotificationBadge initialCount={pendingOrderCount} />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="hidden px-4 pb-6 lg:block">
             <LogoutButton />
           </div>
-        </div>
-        <nav className="flex gap-1 overflow-x-auto px-4 pb-4 lg:flex-col lg:px-4">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-green-700/80 hover:bg-green-50 hover:text-green-700"
-              >
-                <Icon className="h-4 w-4" strokeWidth={1.5} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="hidden px-4 pb-6 lg:block">
-          <LogoutButton />
-        </div>
+        </DashboardEntrance>
       </aside>
 
-      <main className="flex-1 px-4 py-8 sm:px-8">{children}</main>
+      <main className="flex-1 px-4 py-8 sm:px-8">
+        <DashboardEntrance y={12} delay={0.08}>
+          {children}
+        </DashboardEntrance>
+      </main>
     </div>
   );
 }

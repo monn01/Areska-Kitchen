@@ -12,6 +12,9 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
+  const isAdminPortal = searchParams.get("portal") === "admin";
+  const loginHref = isAdminPortal ? "/admin/login" : "/account/login";
+  const forgotPasswordHref = isAdminPortal ? "/admin/forgot-password" : "/account/forgot-password";
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -55,7 +58,7 @@ export default function ResetPasswordPage() {
           {!token ? (
             <p className="mt-8 text-center text-sm text-[#B3432E]">
               Link reset tidak valid. Silakan minta link baru dari halaman{" "}
-              <Link href="/account/forgot-password" className="font-medium underline">
+              <Link href={forgotPasswordHref} className="font-medium underline">
                 lupa password
               </Link>
               .
@@ -69,7 +72,7 @@ export default function ResetPasswordPage() {
                 variant="primary"
                 className="w-full"
                 onClick={() => {
-                  router.push("/account/login");
+                  router.push(loginHref);
                 }}
               >
                 Ke Halaman Masuk

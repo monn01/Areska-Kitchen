@@ -1,15 +1,79 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { ImageOff } from "lucide-react";
+import { ChevronDown, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { updateProfile, type ProfileFormState } from "@/lib/actions/account";
-import type { User } from "@prisma/client";
+import { cn } from "@/lib/utils";
+import type { Gender, User } from "@prisma/client";
 
 const inputClass =
   "w-full rounded-xl border border-green-200 bg-cream-50 px-4 py-2.5 text-green-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-orange-300";
 const labelClass = "mb-1.5 block text-sm font-medium text-green-700";
+
+const GENDER_LABELS: Record<Gender, string> = { MALE: "Laki-laki", FEMALE: "Perempuan" };
+
+function GenderSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={cn(inputClass, "flex items-center justify-between gap-2 text-left")}
+      >
+        <span className={value ? "" : "text-green-700/40"}>
+          {value ? GENDER_LABELS[value as Gender] : "Pilih..."}
+        </span>
+        <ChevronDown
+          className={cn("h-4 w-4 shrink-0 transition-transform duration-fast", open && "rotate-180")}
+          strokeWidth={2}
+        />
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-green-100 bg-cream-50 py-1 shadow-[0_8px_24px_rgba(31,77,58,0.14)]">
+          <button
+            type="button"
+            onClick={() => {
+              onChange("");
+              setOpen(false);
+            }}
+            className="block w-full px-4 py-2 text-left text-sm text-green-700/60 hover:bg-green-50"
+          >
+            Pilih...
+          </button>
+          {(Object.entries(GENDER_LABELS) as [Gender, string][]).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                onChange(key);
+                setOpen(false);
+              }}
+              className={cn(
+                "block w-full px-4 py-2 text-left text-sm hover:bg-green-50",
+                key === value ? "font-semibold text-green-700" : "text-green-700/80",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB — sebelum dikompres
 const AVATAR_DIMENSION = 256; // px, sisi terpanjang setelah di-resize
@@ -65,6 +129,7 @@ export function ProfileForm({ user }: { user: User }) {
   const [avatarPreview, setAvatarPreview] = useState(user.avatarUrl ?? "");
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [gender, setGender] = useState<string>(user.gender ?? "");
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -178,19 +243,9 @@ export function ProfileForm({ user }: { user: User }) {
           />
         </div>
         <div>
-          <label htmlFor="gender" className={labelClass}>
-            Jenis Kelamin (opsional)
-          </label>
-          <select
-            id="gender"
-            name="gender"
-            defaultValue={user.gender ?? ""}
-            className={inputClass}
-          >
-            <option value="">Pilih...</option>
-            <option value="MALE">Laki-laki</option>
-            <option value="FEMALE">Perempuan</option>
-          </select>
+          <label className={labelClass}>Jenis Kelamin (opsional)</label>
+          <input type="hidden" name="gender" value={gender} />
+          <GenderSelect value={gender} onChange={setGender} />
         </div>
       </div>
 

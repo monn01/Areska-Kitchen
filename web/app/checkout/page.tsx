@@ -1,9 +1,13 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
 import { ArrowLeft } from "lucide-react";
+import { authOptions } from "@/lib/auth";
 import { MinimalHeader } from "@/components/ui/MinimalHeader";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+  const session = await getServerSession(authOptions);
+
   return (
     <div className="min-h-screen bg-cream-100">
       <MinimalHeader />
@@ -18,7 +22,7 @@ export default function CheckoutPage() {
           </Link>
           <h1 className="mt-3 font-heading text-4xl font-semibold text-green-700">Checkout</h1>
           <div className="mt-8">
-            <CheckoutForm />
+            <CheckoutForm userId={session?.user?.id} />
           </div>
         </div>
       </div>

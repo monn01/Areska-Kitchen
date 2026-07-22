@@ -29,7 +29,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     "/admin",
-    "/admin/((?!login).*)",
+    "/admin/((?!login|forgot-password).*)",
     "/account",
     "/account/((?!login|register|forgot-password|reset-password).*)",
   ],
